@@ -18,7 +18,7 @@
     <a class="nav-logo" href="#"><span>SUB</span>MERGO</a>
     <ul class="nav-links">
       <li><a href="#missions">Missions</a></li><li><a href="#data">Data</a></li>
-      <li><a href="#about">About</a></li><li><a href="#team">Team</a></li><li><a href="?admin">Admin</a></li>
+      <li><a href="#about">About</a></li><li><a href="#team">Team</a></li><li><a href="#member-auth">Member Login</a></li><li><a href="?admin">Admin</a></li>
     </ul>
     <div class="nav-status"><div class="status-dot"></div><span>ROV ONLINE</span></div>
   </nav>
@@ -34,6 +34,33 @@
       <a class="btn-ghost" href="#data">Sensor Log</a>
     </div>
   </section>
+  <section id="member-auth">
+    <div class="section-header">
+      <div><div class="section-tag">Member Access</div><div class="section-divider"></div><h2>Login or Register</h2></div>
+    </div>
+    <div class="auth-grid">
+      <form class="auth-card" id="register-form">
+        <h3>Create Account</h3>
+        <label class="form-label">Display Name</label>
+        <input class="form-input" id="reg-name" required />
+        <label class="form-label">Email</label>
+        <input class="form-input" id="reg-email" type="email" required />
+        <label class="form-label">Password</label>
+        <input class="form-input" id="reg-password" type="password" required />
+        <button class="btn-primary" type="submit">Register</button>
+      </form>
+      <form class="auth-card" id="member-login-form">
+        <h3>Member Login</h3>
+        <label class="form-label">Email</label>
+        <input class="form-input" id="login-email" type="email" required />
+        <label class="form-label">Password</label>
+        <input class="form-input" id="login-password" type="password" required />
+        <button class="btn-primary" type="submit">Login</button>
+      </form>
+    </div>
+    <div id="member-auth-msg"></div>
+  </section>
+  
   <div class="stats-strip">
     <div class="stat-item"><div class="stat-num">14<span class="accent">+</span></div><div class="stat-desc">Missions Completed</div></div>
     <div class="stat-item"><div class="stat-num">28<span class="accent">m</span></div><div class="stat-desc">Max Recorded Depth</div></div>

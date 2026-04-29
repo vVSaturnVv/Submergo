@@ -204,6 +204,7 @@
     const logoutBtn=document.getElementById('member-logout-btn');
     if(logoutBtn) logoutBtn.addEventListener('click',logoutMember);
     document.querySelectorAll('[data-member-tab]').forEach(btn=>btn.addEventListener('click',()=>switchMemberTab(btn.dataset.memberTab)));
+    document.body.classList.remove('member-logged-in');
     const active=JSON.parse(localStorage.getItem('submergo:activeMember')||'null');
     if(active) showMemberHome(active);
     else document.body.classList.remove('member-logged-in');
@@ -225,6 +226,7 @@
     const member={name,email,password,createdAt:new Date().toISOString()};
     members.push(member); setMembers(members); localStorage.setItem('submergo:activeMember',JSON.stringify(member));
     setMemberMsg('Registration successful. Redirecting to your personal homepage.');
+    window.location.href='member.html';
     showMemberHome(member);
   }
   function loginMember(e){
@@ -235,6 +237,11 @@
     if(!member) return setMemberMsg('Invalid login credentials.', true);
     localStorage.setItem('submergo:activeMember',JSON.stringify(member));
     setMemberMsg('Login successful. Redirecting to your personal homepage.');
+    window.location.href='member.html';
+  }
+  function logoutMember(){
+    localStorage.removeItem('submergo:activeMember');
+    window.location.href='index.html';
     showMemberHome(member);
   }
   function showMemberHome(member){
@@ -281,6 +288,18 @@
     const messages=JSON.parse(localStorage.getItem('submergo:chatMessages')||'[]');
     shell.innerHTML=messages.slice(-30).map(m=>`<div class="chat-msg"><strong>${m.user}</strong>: ${m.text}</div>`).join('');
   }
+  function initMemberPage(){
+    if(!document.getElementById('member-home')) return;
+    const active=JSON.parse(localStorage.getItem('submergo:activeMember')||'null');
+    if(!active){window.location.href='index.html'; return;}
+    document.getElementById('member-home-title').textContent=`Welcome, ${active.name}`;
+    const logoutBtn=document.getElementById('member-logout-btn');
+    if(logoutBtn) logoutBtn.addEventListener('click',logoutMember);
+    const chatForm=document.getElementById('chat-form');
+    if(chatForm) chatForm.addEventListener('submit',sendChatMessage);
+    document.querySelectorAll('[data-member-tab]').forEach(btn=>btn.addEventListener('click',()=>switchMemberTab(btn.dataset.memberTab)));
+    renderNews(); renderChat(); switchMemberTab('chat');
+  }
 
 
   // EXTRA BUTTON FIXES: use real event listeners too, so clicks work even if inline onclick is ignored.
@@ -325,4 +344,5 @@
     });
   }
   bindButtonFixes();
+  initMemberPage();
   route();
