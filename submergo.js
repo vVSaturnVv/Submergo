@@ -207,6 +207,9 @@
     const active=JSON.parse(localStorage.getItem('submergo:activeMember')||'null');
     if(active) showMemberHome(active);
     else document.body.classList.remove('member-logged-in');
+    document.querySelectorAll('[data-member-tab]').forEach(btn=>btn.addEventListener('click',()=>switchMemberTab(btn.dataset.memberTab)));
+    const active=JSON.parse(localStorage.getItem('submergo:activeMember')||'null');
+    if(active) showMemberHome(active);
     renderNews();
     renderChat();
   }
