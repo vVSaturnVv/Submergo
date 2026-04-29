@@ -1,0 +1,232 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Submergo — Team Submerge</title>
+  <link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;600;700;800&family=DM+Mono:ital,wght@0,300;0,400;1,300&display=swap" rel="stylesheet" />
+    <link rel="stylesheet" href="submergo.css" />
+
+</head>
+<body>
+
+<!-- PUBLIC SITE -->
+<div id="public-site">
+  <div id="cursor"></div>
+  <div id="cursor-ring"></div>
+  <nav>
+    <a class="nav-logo" href="#"><span>SUB</span>MERGO</a>
+    <ul class="nav-links">
+      <li><a href="#missions">Missions</a></li><li><a href="#data">Data</a></li>
+      <li><a href="#about">About</a></li><li><a href="#team">Team</a></li><li><a href="?admin">Admin</a></li>
+    </ul>
+    <div class="nav-status"><div class="status-dot"></div><span>ROV ONLINE</span></div>
+  </nav>
+  <section id="hero">
+    <div class="depth-grid"></div>
+    <div class="sonar-container"><div class="sonar-cross"></div><div class="sonar-ring"></div><div class="sonar-ring"></div><div class="sonar-ring"></div><div class="sonar-ring"></div><div class="sonar-blip"></div></div>
+    <div class="horizon"></div>
+    <div class="hero-label" id="hero-label">Team Submerge &middot; Est. 2024</div>
+    <h1 id="hero-title-el">READING<span class="highlight" id="hero-title-line2">THE REEF</span></h1>
+    <p class="hero-sub" id="hero-sub-el">Coastal reef survey and environmental monitoring from the water's surface down. Real-time sensor data. Precision ROV operations. Every dive, documented.</p>
+    <div class="hero-cta">
+      <a class="btn-primary" href="#missions">&#8595; View Missions</a>
+      <a class="btn-ghost" href="#data">Sensor Log</a>
+    </div>
+  </section>
+  <div class="stats-strip">
+    <div class="stat-item"><div class="stat-num">14<span class="accent">+</span></div><div class="stat-desc">Missions Completed</div></div>
+    <div class="stat-item"><div class="stat-num">28<span class="accent">m</span></div><div class="stat-desc">Max Recorded Depth</div></div>
+    <div class="stat-item"><div class="stat-num">3.2<span class="accent">TB</span></div><div class="stat-desc">Data Collected</div></div>
+    <div class="stat-item"><div class="stat-num">99<span class="accent">%</span></div><div class="stat-desc">ROV Recovery Rate</div></div>
+    <div class="stat-item"><div class="stat-num">6<span class="accent"> reefs</span></div><div class="stat-desc">Active Survey Sites</div></div>
+  </div>
+  <section id="missions">
+    <div class="section-header">
+      <div><div class="section-tag">Field Operations</div><div class="section-divider"></div><h2>Mission Log</h2></div>
+      <div class="section-meta">Updated automatically<br/><span id="last-updated">-</span></div>
+    </div>
+    <div class="mission-filters">
+      <button class="filter-btn active" onclick="filterMissions('all',this)">All</button>
+      <button class="filter-btn" onclick="filterMissions('active',this)">Active</button>
+      <button class="filter-btn" onclick="filterMissions('complete',this)">Complete</button>
+      <button class="filter-btn" onclick="filterMissions('planned',this)">Planned</button>
+    </div>
+    <div class="missions-grid" id="missions-grid"><div style="padding:40px;color:var(--text-dim);">Loading...</div></div>
+  </section>
+  <section id="data">
+    <div class="section-header"><div><div class="section-tag">Sensor Output</div><div class="section-divider"></div><h2>Latest Readings</h2></div></div>
+    <table class="data-table">
+      <thead><tr><th>Timestamp</th><th>Mission</th><th>Depth (m)</th><th>Temp (&deg;C)</th><th>Salinity (PSU)</th><th>DO (mg/L)</th><th>Turbidity (NTU)</th><th>Status</th></tr></thead>
+      <tbody id="data-table-body"></tbody>
+    </table>
+  </section>
+  <section id="about">
+    <div class="about-visual">
+      <div class="rov-frame">
+        <div class="corner-tl"></div><div class="corner-tr"></div><div class="corner-bl"></div><div class="corner-br"></div>
+        <div class="scan-line"></div>
+        <svg class="rov-svg" viewBox="0 0 280 180" fill="none" xmlns="http://www.w3.org/2000/svg">
+          <rect x="60" y="60" width="160" height="70" rx="6" fill="#0a1628" stroke="#2a3f5f" stroke-width="1.5"/>
+          <rect x="80" y="40" width="120" height="22" rx="3" fill="#070d1a" stroke="#2a3f5f" stroke-width="1.2"/>
+          <ellipse cx="52" cy="95" rx="10" ry="18" fill="#070d1a" stroke="#00d4ff" stroke-width="1"/>
+          <ellipse cx="228" cy="95" rx="10" ry="18" fill="#070d1a" stroke="#00d4ff" stroke-width="1"/>
+          <ellipse cx="130" cy="145" rx="18" ry="10" fill="#070d1a" stroke="#00d4ff" stroke-width="1"/>
+          <ellipse cx="150" cy="145" rx="18" ry="10" fill="#070d1a" stroke="#00d4ff" stroke-width="1"/>
+          <circle cx="75" cy="95" r="12" fill="#070d1a" stroke="#00d4ff" stroke-width="1.5"/>
+          <circle cx="75" cy="95" r="6" fill="#00d4ff" opacity="0.3"/>
+          <circle cx="75" cy="95" r="3" fill="#00d4ff" opacity="0.8"/>
+          <circle cx="63" cy="80" r="3" fill="#ffb700" opacity="0.9"/>
+          <circle cx="63" cy="110" r="3" fill="#ffb700" opacity="0.9"/>
+          <line x1="100" y1="80" x2="200" y2="80" stroke="#2a3f5f" stroke-width="1"/>
+          <line x1="100" y1="95" x2="200" y2="95" stroke="#00d4ff" stroke-width="0.5" stroke-dasharray="4 4"/>
+          <line x1="100" y1="110" x2="200" y2="110" stroke="#2a3f5f" stroke-width="1"/>
+          <rect x="170" y="83" width="20" height="6" rx="1" fill="#00d4ff" opacity="0.4"/>
+          <rect x="170" y="93" width="14" height="6" rx="1" fill="#00d4ff" opacity="0.25"/>
+          <path d="M140 40 Q 140 20, 140 10" stroke="#2a3f5f" stroke-width="2" stroke-dasharray="3 3"/>
+          <rect x="215" y="85" width="8" height="24" rx="2" fill="#070d1a" stroke="#00d4ff" stroke-width="1"/>
+          <line x1="46" y1="88" x2="58" y2="88" stroke="#00d4ff" stroke-width="1" opacity="0.6"/>
+          <line x1="52" y1="82" x2="52" y2="108" stroke="#00d4ff" stroke-width="1" opacity="0.6"/>
+        </svg>
+      </div>
+    </div>
+    <div class="about-content">
+      <div class="section-tag">Who We Are</div><div class="section-divider"></div>
+      <h2 id="about-heading">Built for the reef</h2><br/>
+      <p id="about-p1"><strong>Team Submerge</strong> is a student-led ROV research group focused on coastal reef monitoring and environmental data collection. Our vehicle &mdash; <strong>Submergo</strong> &mdash; is custom-built for shallow-water survey operations.</p>
+      <p id="about-p2">We deploy along coastal reef systems, collecting high-resolution sensor data on water temperature, dissolved oxygen, salinity, and turbidity. Every dive documents reef health in detail.</p>
+      <p id="about-p3">Our mission feed updates in real time as we deploy, surface, and process data &mdash; bridging fieldwork and analysis in a single dashboard.</p>
+      <a class="btn-ghost" href="#team" style="margin-top:8px;">Meet the Team &rarr;</a>
+    </div>
+  </section>
+  <section id="team">
+    <div class="section-tag">Crew</div><div class="section-divider"></div><h2>Team Submerge</h2>
+    <div class="team-grid">
+      <div class="team-card"><div class="team-avatar">JR</div><div class="team-name">Jordan Rivera</div><div class="team-role">Lead Engineer</div></div>
+      <div class="team-card"><div class="team-avatar">SK</div><div class="team-name">Sam Kim</div><div class="team-role">Software / Data</div></div>
+      <div class="team-card"><div class="team-avatar">AP</div><div class="team-name">Alex Patel</div><div class="team-role">Sensor Systems</div></div>
+      <div class="team-card"><div class="team-avatar">ML</div><div class="team-name">Morgan Liu</div><div class="team-role">Navigation</div></div>
+      <div class="team-card"><div class="team-avatar">TN</div><div class="team-name">Tyler Nguyen</div><div class="team-role">Field Operations</div></div>
+    </div>
+  </section>
+  <footer><div class="footer-logo">SUBMERGO / TEAM SUBMERGE</div><div class="footer-copy">&copy; 2025 &mdash; All dive data archived</div></footer>
+</div>
+
+<!-- ADMIN SITE -->
+<div id="admin-site">
+  <div id="login-screen">
+    <div class="login-box">
+      <div class="lc-tl"></div><div class="lc-tr"></div><div class="lc-bl"></div><div class="lc-br"></div>
+      <div class="login-logo"><span>SUB</span>MERGO</div>
+      <div class="login-sub">Admin Access &middot; Team Submerge</div>
+      <label class="login-label">Password</label>
+      <input class="login-input" id="pw-input" type="password" placeholder="Enter admin password" onkeydown="if(event.key==='Enter')tryLogin()" />
+      <button class="login-btn" onclick="tryLogin()">&#x21B3; Authenticate</button>
+      <div class="login-error" id="login-error">&#9888; Incorrect password. Access denied.</div>
+    </div>
+  </div>
+  <div id="admin-shell" style="display:none;">
+    <aside class="admin-sidebar">
+      <div class="sidebar-logo"><div class="sidebar-logo-text"><span>SUB</span>MERGO</div><div class="sidebar-badge">// Admin Panel</div></div>
+      <nav class="sidebar-nav">
+        <div class="sidebar-section-label">Content</div>
+        <div class="sidebar-link active" onclick="showTab('missions',this)"><span class="icon">&#9672;</span> Missions</div>
+        <div class="sidebar-link" onclick="showTab('hero',this)"><span class="icon">&#9650;</span> Hero Section</div>
+        <div class="sidebar-link" onclick="showTab('about',this)"><span class="icon">&#9723;</span> About</div>
+        <div class="sidebar-link" onclick="showTab('sensordata',this)"><span class="icon">&#9675;</span> Sensor Data</div>
+      </nav>
+      <div class="sidebar-footer">
+        <button class="view-site-btn" onclick="switchToPublic()">&#8592; View Public Site</button>
+        <button class="logout-btn" onclick="logout()">&#9167; Log Out</button>
+      </div>
+    </aside>
+    <div class="admin-main">
+      <div class="admin-topbar">
+        <div><div class="topbar-title" id="topbar-title">Missions</div><div class="topbar-meta" id="topbar-meta">Manage mission cards on the public site</div></div>
+        <button class="publish-btn" id="publish-btn" onclick="publishAll()"><span>&#8593;</span> Publish Changes</button>
+      </div>
+      <div class="tab-panel active" id="tab-missions">
+        <div class="page-heading"><div class="page-tag">// Mission Log</div><div class="page-h">Manage Missions</div><div class="page-desc">Add, edit, or remove missions. Hit Publish to go live.</div></div>
+        <div class="section-card">
+          <div class="section-card-header"><div class="section-card-title">Current Missions</div><button class="icon-btn" onclick="openAddMission()">+ Add Mission</button></div>
+          <div class="section-card-body"><div class="mission-list" id="mission-list"></div></div>
+        </div>
+      </div>
+      <div class="tab-panel" id="tab-hero">
+        <div class="page-heading"><div class="page-tag">// Hero Section</div><div class="page-h">Edit Hero Text</div><div class="page-desc">Controls the large headline and subtitle on the landing page.</div></div>
+        <div class="section-card">
+          <div class="section-card-header"><div class="section-card-title">Hero Content</div></div>
+          <div class="section-card-body">
+            <div class="form-grid single">
+              <div class="form-group"><label class="form-label">Label (top tag line)</label><input class="form-input" id="h-label" /></div>
+              <div class="form-group"><label class="form-label">Headline Line 1 (solid)</label><input class="form-input" id="h-line1" /></div>
+              <div class="form-group"><label class="form-label">Headline Line 2 (outlined accent)</label><input class="form-input" id="h-line2" /></div>
+              <div class="form-group"><label class="form-label">Subtitle</label><textarea class="form-textarea" id="h-sub" rows="3"></textarea></div>
+            </div>
+          </div>
+        </div>
+      </div>
+      <div class="tab-panel" id="tab-about">
+        <div class="page-heading"><div class="page-tag">// About Section</div><div class="page-h">Edit About Text</div><div class="page-desc">The team description in the About section.</div></div>
+        <div class="section-card">
+          <div class="section-card-header"><div class="section-card-title">About Content</div></div>
+          <div class="section-card-body">
+            <div class="form-grid single">
+              <div class="form-group"><label class="form-label">Section Heading</label><input class="form-input" id="a-heading" /></div>
+              <div class="form-group"><label class="form-label">Paragraph 1</label><textarea class="form-textarea" id="a-p1" rows="3"></textarea></div>
+              <div class="form-group"><label class="form-label">Paragraph 2</label><textarea class="form-textarea" id="a-p2" rows="3"></textarea></div>
+              <div class="form-group"><label class="form-label">Paragraph 3</label><textarea class="form-textarea" id="a-p3" rows="2"></textarea></div>
+            </div>
+          </div>
+        </div>
+      </div>
+      <div class="tab-panel" id="tab-sensordata">
+        <div class="page-heading"><div class="page-tag">// Sensor Output</div><div class="page-h">Sensor Data Log</div><div class="page-desc">Edit the sensor readings table on the public site.</div></div>
+        <div class="section-card">
+          <div class="section-card-header"><div class="section-card-title">Readings</div><button class="icon-btn" onclick="addSensorRow()">+ Add Row</button></div>
+          <div class="section-card-body" style="overflow-x:auto;">
+            <table class="sensor-table-editor">
+              <thead><tr><th>Timestamp</th><th>Mission ID</th><th>Depth</th><th>Temp</th><th>Salinity</th><th>DO</th><th>Turbidity</th><th>Status</th><th></th></tr></thead>
+              <tbody id="sensor-tbody"></tbody>
+            </table>
+            <button class="add-row-btn" onclick="addSensorRow()">+ Add Row</button>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Mission Modal -->
+<div class="modal-overlay" id="modal-overlay">
+  <div class="modal">
+    <div class="modal-header"><div class="modal-title" id="modal-title">Add Mission</div><button class="modal-close" onclick="closeModal()">&#10005;</button></div>
+    <div class="modal-body">
+      <input type="hidden" id="edit-index" value="-1" />
+      <div class="form-grid">
+        <div class="form-group"><label class="form-label">Mission ID</label><input class="form-input" id="m-id" placeholder="SMRG-017" /></div>
+        <div class="form-group"><label class="form-label">Status</label><select class="form-select" id="m-status"><option value="planned">Planned</option><option value="active">Active</option><option value="complete">Complete</option></select></div>
+        <div class="form-group" style="grid-column:1/-1"><label class="form-label">Mission Name</label><input class="form-input" id="m-name" /></div>
+        <div class="form-group"><label class="form-label">Date</label><input class="form-input" id="m-date" /></div>
+        <div class="form-group"><label class="form-label">Location</label><input class="form-input" id="m-location" /></div>
+        <div class="form-group"><label class="form-label">Progress % (0-100)</label><input class="form-input" id="m-progress" type="number" min="0" max="100" /></div>
+        <div class="form-group"><label class="form-label">Live Ticker (active only)</label><input class="form-input" id="m-ticker" /></div>
+      </div>
+      <div class="adivider"></div>
+      <div style="margin-bottom:12px;font-size:.65rem;letter-spacing:.15em;text-transform:uppercase;color:var(--text-dim);">Sensor Readings (up to 4)</div>
+      <div id="sensor-inputs"></div>
+      <button class="add-sensor-btn" onclick="addSensorInput()">+ Add Sensor Reading</button>
+    </div>
+    <div class="modal-footer">
+      <button class="cancel-btn" onclick="closeModal()">Cancel</button>
+      <button class="save-mission-btn" onclick="saveMission()">Save Mission</button>
+    </div>
+  </div>
+</div>
+
+<div id="toast"></div>
+
+  <script src="submergo.js"></script>
+
+</body>
+</html>
