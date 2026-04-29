@@ -19,6 +19,7 @@
     <ul class="nav-links">
       <li><a href="#missions">Missions</a></li><li><a href="#data">Data</a></li>
       <li><a href="#about">About</a></li><li><a href="#team">Team</a></li><li><a href="#member-auth">Member Login</a></li><li><a href="?admin">Admin</a></li>
+      <li><a href="#about">About</a></li><li><a href="#team">Team</a></li><li><a href="?admin">Admin</a></li>
     </ul>
     <div class="nav-status"><div class="status-dot"></div><span>ROV ONLINE</span></div>
   </nav>
@@ -61,6 +62,35 @@
     <div id="member-auth-msg"></div>
   </section>
   
+  <section id="member-home" style="display:none;">
+    <div class="section-tag">Personal Homepage</div><div class="section-divider"></div>
+    <h2 id="member-home-title">Welcome</h2>
+    <button class="btn-ghost" id="member-logout-btn" type="button">Log out</button>
+    <div class="member-tabs">
+      <button class="filter-btn active" data-member-tab="chat">Chat</button>
+      <button class="filter-btn" data-member-tab="rov">Live ROV Feed</button>
+    </div>
+    <div id="member-tab-chat" class="member-tab-panel active">
+      <div class="chat-shell">
+        <div id="chat-messages"></div>
+        <form id="chat-form" class="chat-form">
+          <input id="chat-input" class="form-input" placeholder="Type a message..." />
+          <button class="btn-primary" type="submit">Send</button>
+        </form>
+      </div>
+    </div>
+    <div id="member-tab-rov" class="member-tab-panel">
+      <div class="rov-live-card">
+        <h3>ROV Live Feed</h3>
+        <p>Stream status: <span class="td-success">ONLINE</span></p>
+        <div class="feed-placeholder">LIVE CAMERA FEED PLACEHOLDER</div>
+      </div>
+    </div>
+    <div class="recent-news">
+      <h3>Recent News</h3>
+      <ul id="member-news-list"></ul>
+    </div>
+  </section>
   <div class="stats-strip">
     <div class="stat-item"><div class="stat-num">14<span class="accent">+</span></div><div class="stat-desc">Missions Completed</div></div>
     <div class="stat-item"><div class="stat-num">28<span class="accent">m</span></div><div class="stat-desc">Max Recorded Depth</div></div>
