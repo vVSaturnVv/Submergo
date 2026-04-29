@@ -374,3 +374,13 @@ body.public-mode #admin-site {
 .recent-news h3{font-family:'Syne',sans-serif;color:var(--white);margin-bottom:10px;}
 .recent-news li{font-size:.72rem;color:var(--text-dim);margin:6px 0;}
 @media(max-width:900px){.auth-grid{grid-template-columns:1fr;}#member-auth,#member-home{padding:60px 24px;}}
+
+body.member-logged-in #hero,
+body.member-logged-in .stats-strip,
+body.member-logged-in #missions,
+body.member-logged-in #data,
+body.member-logged-in #about,
+body.member-logged-in #team,
+body.member-logged-in footer,
+body.member-logged-in #member-auth {display:none !important;}
+body.member-logged-in #member-home {display:block !important; padding-top:130px;}

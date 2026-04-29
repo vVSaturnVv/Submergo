@@ -201,6 +201,12 @@
     if(registerForm) registerForm.addEventListener('submit',registerMember);
     if(loginForm) loginForm.addEventListener('submit',loginMember);
     if(chatForm) chatForm.addEventListener('submit',sendChatMessage);
+    const logoutBtn=document.getElementById('member-logout-btn');
+    if(logoutBtn) logoutBtn.addEventListener('click',logoutMember);
+    document.querySelectorAll('[data-member-tab]').forEach(btn=>btn.addEventListener('click',()=>switchMemberTab(btn.dataset.memberTab)));
+    const active=JSON.parse(localStorage.getItem('submergo:activeMember')||'null');
+    if(active) showMemberHome(active);
+    else document.body.classList.remove('member-logged-in');
     document.querySelectorAll('[data-member-tab]').forEach(btn=>btn.addEventListener('click',()=>switchMemberTab(btn.dataset.memberTab)));
     const active=JSON.parse(localStorage.getItem('submergo:activeMember')||'null');
     if(active) showMemberHome(active);
@@ -232,10 +238,18 @@
     showMemberHome(member);
   }
   function showMemberHome(member){
+    document.body.classList.add('member-logged-in');
     document.getElementById('member-auth').style.display='none';
     document.getElementById('member-home').style.display='block';
     document.getElementById('member-home-title').textContent=`Welcome, ${member.name}`;
     switchMemberTab('chat');
+  }
+  function logoutMember(){
+    localStorage.removeItem('submergo:activeMember');
+    document.body.classList.remove('member-logged-in');
+    document.getElementById('member-home').style.display='none';
+    document.getElementById('member-auth').style.display='block';
+    setMemberMsg('Logged out.');
   }
   function setMemberMsg(msg,isError=false){const el=document.getElementById('member-auth-msg');if(!el)return;el.textContent=msg;el.style.color=isError?'var(--danger)':'var(--success)';}
   function renderNews(){
