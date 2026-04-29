@@ -1,0 +1,44 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Submergo Member Home</title>
+  <link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;600;700;800&family=DM+Mono:ital,wght@0,300;0,400;1,300&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="submergo.css" />
+</head>
+<body class="member-logged-in">
+  <nav>
+    <a class="nav-logo" href="index.html"><span>SUB</span>MERGO</a>
+    <ul class="nav-links"><li><a href="index.html">Home</a></li></ul>
+    <div class="nav-status"><div class="status-dot"></div><span>MEMBER ONLINE</span></div>
+  </nav>
+  <section id="member-home">
+    <div class="section-tag">Personal Homepage</div><div class="section-divider"></div>
+    <h2 id="member-home-title">Welcome</h2>
+    <button class="btn-ghost" id="member-logout-btn" type="button">Log out</button>
+    <div class="member-tabs">
+      <button class="filter-btn active" data-member-tab="chat">Chat</button>
+      <button class="filter-btn" data-member-tab="rov">Live ROV Feed</button>
+    </div>
+    <div id="member-tab-chat" class="member-tab-panel active">
+      <div class="chat-shell">
+        <div id="chat-messages"></div>
+        <form id="chat-form" class="chat-form">
+          <input id="chat-input" class="form-input" placeholder="Type a message..." />
+          <button class="btn-primary" type="submit">Send</button>
+        </form>
+      </div>
+    </div>
+    <div id="member-tab-rov" class="member-tab-panel">
+      <div class="rov-live-card">
+        <h3>ROV Live Feed</h3>
+        <p>Stream status: <span class="td-success">ONLINE</span></p>
+        <div class="feed-placeholder">LIVE CAMERA FEED PLACEHOLDER</div>
+      </div>
+    </div>
+    <div class="recent-news"><h3>Recent News</h3><ul id="member-news-list"></ul></div>
+  </section>
+  <script src="submergo.js"></script>
+</body>
+</html>
