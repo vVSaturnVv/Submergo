@@ -1,0 +1,829 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Submergo — Team Submerge</title>
+  <link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;600;700;800&family=DM+Mono:ital,wght@0,300;0,400;1,300&display=swap" rel="stylesheet" />
+  <style>
+    :root{--black:#05080f;--deep:#070d1a;--navy:#0a1628;--accent:#00d4ff;--accent2:#0057ff;--surface:#0e1f3a;--muted:#2a3f5f;--text:#c8daf0;--text-dim:#5a7a99;--white:#e8f4ff;--danger:#ff4444;--success:#00ffaa;--warn:#ffb700;}
+    *,*::before,*::after{box-sizing:border-box;margin:0;padding:0;}
+    html{scroll-behavior:smooth;}
+    body{background:var(--black);color:var(--text);font-family:'DM Mono',monospace;overflow-x:hidden;}
+    #cursor{position:fixed;width:12px;height:12px;background:var(--accent);border-radius:50%;pointer-events:none;z-index:9999;transform:translate(-50%,-50%);mix-blend-mode:screen;}
+    #cursor-ring{position:fixed;width:36px;height:36px;border:1px solid rgba(0,212,255,.4);border-radius:50%;pointer-events:none;z-index:9998;transform:translate(-50%,-50%);transition:transform .18s ease-out;}
+    body::before{content:'';position:fixed;inset:0;background:repeating-linear-gradient(0deg,transparent,transparent 2px,rgba(0,0,0,.07) 2px,rgba(0,0,0,.07) 4px);pointer-events:none;z-index:100;}
+    body::after{content:'';position:fixed;inset:0;background-image:url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='0.04'/%3E%3C/svg%3E");pointer-events:none;z-index:99;opacity:.5;}
+    nav{position:fixed;top:0;left:0;right:0;z-index:500;display:flex;align-items:center;justify-content:space-between;padding:20px 48px;background:linear-gradient(to bottom,rgba(5,8,15,.95),transparent);backdrop-filter:blur(2px);}
+    .nav-logo{font-family:'Syne',sans-serif;font-weight:800;font-size:1.1rem;letter-spacing:.12em;color:var(--white);text-decoration:none;cursor:pointer;}
+    .nav-logo span{color:var(--accent);}
+    .nav-links{display:flex;gap:36px;list-style:none;}
+    .nav-links a{color:var(--text-dim);text-decoration:none;font-size:.72rem;letter-spacing:.18em;text-transform:uppercase;transition:color .2s;cursor:pointer;}
+    .nav-links a:hover{color:var(--accent);}
+    .nav-status{display:flex;align-items:center;gap:8px;font-size:.68rem;letter-spacing:.1em;color:var(--text-dim);}
+    .status-dot{width:7px;height:7px;border-radius:50%;background:var(--success);box-shadow:0 0 8px var(--success);animation:pulse 2s infinite;}
+    @keyframes pulse{0%,100%{opacity:1;transform:scale(1)}50%{opacity:.6;transform:scale(.85)}}
+    #hero{position:relative;min-height:100vh;display:flex;flex-direction:column;justify-content:center;padding:0 48px;overflow:hidden;}
+    .sonar-container{position:absolute;right:-80px;top:50%;transform:translateY(-50%);width:700px;height:700px;}
+    .sonar-ring{position:absolute;border-radius:50%;border:1px solid rgba(0,212,255,.15);top:50%;left:50%;transform:translate(-50%,-50%);animation:sonar 4s ease-out infinite;}
+    .sonar-ring:nth-child(1){width:150px;height:150px;animation-delay:0s}.sonar-ring:nth-child(2){width:300px;height:300px;animation-delay:.8s}.sonar-ring:nth-child(3){width:450px;height:450px;animation-delay:1.6s}.sonar-ring:nth-child(4){width:600px;height:600px;animation-delay:2.4s}
+    @keyframes sonar{0%{opacity:.6}100%{opacity:0}}
+    .sonar-cross{position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);width:700px;height:700px;}
+    .sonar-cross::before,.sonar-cross::after{content:'';position:absolute;background:rgba(0,212,255,.06);}
+    .sonar-cross::before{width:1px;height:100%;left:50%;top:0;}.sonar-cross::after{height:1px;width:100%;top:50%;left:0;}
+    .sonar-blip{position:absolute;top:50%;left:50%;width:8px;height:8px;background:var(--accent);border-radius:50%;transform:translate(-50%,-50%);box-shadow:0 0 20px var(--accent);}
+    .depth-grid{position:absolute;inset:0;background-image:linear-gradient(rgba(0,212,255,.03) 1px,transparent 1px),linear-gradient(90deg,rgba(0,212,255,.03) 1px,transparent 1px);background-size:60px 60px;}
+    .horizon{position:absolute;bottom:0;left:0;right:0;height:1px;background:linear-gradient(90deg,transparent,var(--accent2),var(--accent),var(--accent2),transparent);opacity:.4;}
+    .hero-label{font-size:.7rem;letter-spacing:.3em;text-transform:uppercase;color:var(--accent);margin-bottom:24px;display:flex;align-items:center;gap:12px;opacity:0;animation:fadeUp .8s forwards .2s;}
+    .hero-label::before{content:'';width:40px;height:1px;background:var(--accent);}
+    h1{font-family:'Syne',sans-serif;font-size:clamp(4rem,10vw,9rem);font-weight:800;line-height:.92;color:var(--white);letter-spacing:-.02em;opacity:0;animation:fadeUp .9s forwards .4s;}
+    h1 .highlight{color:transparent;-webkit-text-stroke:1px var(--accent);display:block;}
+    .hero-sub{margin-top:32px;max-width:480px;font-size:.82rem;line-height:1.8;color:var(--text-dim);opacity:0;animation:fadeUp .9s forwards .6s;}
+    .hero-cta{margin-top:48px;display:flex;gap:16px;opacity:0;animation:fadeUp .9s forwards .8s;}
+    .btn-primary{padding:14px 32px;background:var(--accent);color:var(--black);font-family:'DM Mono',monospace;font-size:.75rem;letter-spacing:.15em;text-transform:uppercase;border:none;cursor:pointer;text-decoration:none;display:inline-flex;align-items:center;gap:10px;transition:background .2s,transform .2s;clip-path:polygon(0 0,calc(100% - 12px) 0,100% 12px,100% 100%,0 100%);}
+    .btn-primary:hover{background:var(--white);transform:translateY(-2px);}
+    .btn-ghost{padding:14px 32px;background:transparent;color:var(--text-dim);font-family:'DM Mono',monospace;font-size:.75rem;letter-spacing:.15em;text-transform:uppercase;border:1px solid var(--muted);cursor:pointer;text-decoration:none;display:inline-flex;align-items:center;gap:10px;transition:border-color .2s,color .2s,transform .2s;clip-path:polygon(0 0,calc(100% - 12px) 0,100% 12px,100% 100%,0 100%);}
+    .btn-ghost:hover{border-color:var(--accent);color:var(--accent);transform:translateY(-2px);}
+    @keyframes fadeUp{from{opacity:0;transform:translateY(30px)}to{opacity:1;transform:translateY(0)}}
+    @keyframes fadeIn{from{opacity:0}to{opacity:1}}
+    .stats-strip{background:var(--navy);border-top:1px solid var(--muted);border-bottom:1px solid var(--muted);padding:20px 48px;display:flex;}
+    .stat-item{flex:1;display:flex;flex-direction:column;gap:4px;padding:0 32px;border-right:1px solid var(--muted);}
+    .stat-item:first-child{padding-left:0}.stat-item:last-child{border-right:none}
+    .stat-num{font-family:'Syne',sans-serif;font-size:1.8rem;font-weight:800;color:var(--white);}.stat-num .accent{color:var(--accent);}
+    .stat-desc{font-size:.65rem;letter-spacing:.15em;text-transform:uppercase;color:var(--text-dim);}
+    #missions{padding:100px 48px;}
+    .section-header{display:flex;align-items:flex-end;justify-content:space-between;margin-bottom:56px;}
+    .section-tag{font-size:.65rem;letter-spacing:.3em;text-transform:uppercase;color:var(--accent);margin-bottom:12px;display:flex;align-items:center;gap:10px;}
+    .section-tag::before{content:'//';opacity:.5;}
+    h2{font-family:'Syne',sans-serif;font-size:clamp(2rem,4vw,3.2rem);font-weight:800;color:var(--white);letter-spacing:-.02em;line-height:1.1;}
+    .section-meta{font-size:.7rem;color:var(--text-dim);letter-spacing:.1em;text-align:right;line-height:1.8;}
+    .mission-filters{display:flex;gap:2px;margin-bottom:32px;}
+    .filter-btn{padding:8px 20px;background:transparent;color:var(--text-dim);font-family:'DM Mono',monospace;font-size:.68rem;letter-spacing:.12em;text-transform:uppercase;border:1px solid transparent;cursor:pointer;transition:all .2s;}
+    .filter-btn.active{background:rgba(0,212,255,.08);color:var(--accent);border-color:rgba(0,212,255,.3);}
+    .filter-btn:hover:not(.active){color:var(--text);}
+    .missions-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(380px,1fr));gap:2px;}
+    .mission-card{background:var(--deep);border:1px solid var(--muted);padding:28px;position:relative;overflow:hidden;cursor:pointer;transition:border-color .3s,transform .3s;}
+    .mission-card::before{content:'';position:absolute;inset:0;background:linear-gradient(135deg,rgba(0,212,255,.04),transparent 60%);opacity:0;transition:opacity .3s;}
+    .mission-card:hover{border-color:rgba(0,212,255,.4);transform:translateY(-3px);}.mission-card:hover::before{opacity:1;}
+    .mission-card::after{content:'';position:absolute;top:0;right:0;width:0;height:0;border-style:solid;border-width:0 28px 28px 0;border-color:transparent var(--muted) transparent transparent;transition:border-color .3s;}
+    .mission-card:hover::after{border-color:transparent rgba(0,212,255,.4) transparent transparent;}
+    .mission-card.active-mission{border-color:rgba(0,255,170,.35);background:linear-gradient(135deg,rgba(0,255,170,.03),var(--deep));}
+    .mission-card.active-mission::after{border-color:transparent rgba(0,255,170,.5) transparent transparent;}
+    .mission-header{display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:20px;}
+    .mission-id{font-size:.62rem;letter-spacing:.2em;color:var(--text-dim);text-transform:uppercase;}
+    .mission-badge{font-size:.6rem;letter-spacing:.12em;text-transform:uppercase;padding:4px 10px;border-radius:2px;}
+    .badge-active{background:rgba(0,255,170,.12);color:var(--success);border:1px solid rgba(0,255,170,.3);}
+    .badge-complete{background:rgba(0,87,255,.12);color:#6699ff;border:1px solid rgba(0,87,255,.3);}
+    .badge-planned{background:rgba(255,183,0,.1);color:var(--warn);border:1px solid rgba(255,183,0,.25);}
+    .mission-name{font-family:'Syne',sans-serif;font-size:1.2rem;font-weight:700;color:var(--white);margin-bottom:8px;line-height:1.2;}
+    .mission-date{font-size:.65rem;color:var(--text-dim);letter-spacing:.08em;margin-bottom:20px;}
+    .sensor-grid{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:20px;}
+    .sensor-item{background:rgba(0,0,0,.3);padding:10px 14px;border-left:2px solid var(--muted);}
+    .sensor-label{font-size:.58rem;letter-spacing:.15em;text-transform:uppercase;color:var(--text-dim);margin-bottom:4px;}
+    .sensor-value{font-size:.9rem;color:var(--text);}.sensor-value.highlight{color:var(--accent);}.sensor-value.warn{color:var(--warn);}
+    .mission-progress{margin-top:16px;}
+    .progress-header{display:flex;justify-content:space-between;font-size:.6rem;color:var(--text-dim);letter-spacing:.1em;text-transform:uppercase;margin-bottom:6px;}
+    .progress-bar{height:2px;background:var(--muted);position:relative;overflow:hidden;}
+    .progress-fill{height:100%;background:linear-gradient(90deg,var(--accent2),var(--accent));position:relative;}
+    .progress-fill::after{content:'';position:absolute;right:0;top:50%;width:4px;height:4px;background:var(--accent);border-radius:50%;transform:translateY(-50%);box-shadow:0 0 8px var(--accent);}
+    .mission-location{margin-top:16px;font-size:.65rem;color:var(--text-dim);display:flex;align-items:center;gap:8px;}
+    .mission-location::before{content:'\25C8';color:var(--accent);font-size:.7rem;}
+    .live-ticker{margin-top:16px;padding:10px 14px;background:rgba(0,255,170,.05);border:1px solid rgba(0,255,170,.2);font-size:.62rem;letter-spacing:.05em;color:var(--success);display:flex;align-items:center;gap:8px;overflow:hidden;}
+    .live-dot{width:5px;height:5px;border-radius:50%;background:var(--success);animation:pulse 1s infinite;flex-shrink:0;}
+    .ticker-text{white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+    #about{padding:100px 48px;background:var(--deep);border-top:1px solid var(--muted);border-bottom:1px solid var(--muted);display:grid;grid-template-columns:1fr 1fr;gap:80px;align-items:center;}
+    .about-visual{position:relative;height:400px;}
+    .rov-frame{position:absolute;inset:0;border:1px solid var(--muted);display:flex;align-items:center;justify-content:center;}
+    .rov-svg{width:280px;height:auto;opacity:.85;}
+    .scan-line{position:absolute;left:0;right:0;height:2px;background:linear-gradient(90deg,transparent,var(--accent),transparent);animation:scan 3s linear infinite;opacity:.6;}
+    @keyframes scan{0%{top:0}100%{top:100%}}
+    .corner-tl,.corner-tr,.corner-bl,.corner-br{position:absolute;width:20px;height:20px;}
+    .corner-tl{top:-1px;left:-1px;border-top:2px solid var(--accent);border-left:2px solid var(--accent);}
+    .corner-tr{top:-1px;right:-1px;border-top:2px solid var(--accent);border-right:2px solid var(--accent);}
+    .corner-bl{bottom:-1px;left:-1px;border-bottom:2px solid var(--accent);border-left:2px solid var(--accent);}
+    .corner-br{bottom:-1px;right:-1px;border-bottom:2px solid var(--accent);border-right:2px solid var(--accent);}
+    .about-content p{font-size:.82rem;line-height:1.9;color:var(--text-dim);margin-bottom:20px;}.about-content p strong{color:var(--text);}
+    #data{padding:100px 48px;}
+    .data-table{width:100%;border-collapse:collapse;font-size:.72rem;}
+    .data-table thead th{text-align:left;padding:10px 20px;font-size:.6rem;letter-spacing:.2em;text-transform:uppercase;color:var(--text-dim);border-bottom:1px solid var(--muted);}
+    .data-table tbody tr{border-bottom:1px solid rgba(42,63,95,.4);transition:background .15s;cursor:pointer;}
+    .data-table tbody tr:hover{background:rgba(0,212,255,.03);}
+    .data-table tbody td{padding:14px 20px;color:var(--text);}.data-table tbody td:first-child{color:var(--text-dim);}
+    .td-accent{color:var(--accent)!important;}.td-success{color:var(--success)!important;}.td-warn{color:var(--warn)!important;}
+    #team{padding:100px 48px;background:var(--deep);border-top:1px solid var(--muted);}
+    .team-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(200px,1fr));gap:2px;margin-top:56px;}
+    .team-card{background:var(--navy);padding:28px 24px;border:1px solid var(--muted);transition:border-color .3s;cursor:pointer;}
+    .team-card:hover{border-color:rgba(0,212,255,.35);}
+    .team-avatar{width:52px;height:52px;background:var(--surface);border:1px solid var(--muted);border-radius:50%;display:flex;align-items:center;justify-content:center;font-family:'Syne',sans-serif;font-weight:800;font-size:1rem;color:var(--accent);margin-bottom:16px;}
+    .team-name{font-family:'Syne',sans-serif;font-weight:700;font-size:.95rem;color:var(--white);margin-bottom:4px;}
+    .team-role{font-size:.62rem;letter-spacing:.12em;text-transform:uppercase;color:var(--text-dim);}
+    footer{padding:40px 48px;border-top:1px solid var(--muted);display:flex;align-items:center;justify-content:space-between;}
+    .footer-logo{font-family:'Syne',sans-serif;font-weight:800;font-size:.9rem;letter-spacing:.1em;color:var(--text-dim);}
+    .footer-copy{font-size:.62rem;color:var(--text-dim);letter-spacing:.08em;}
+    .section-divider{width:60px;height:2px;background:linear-gradient(90deg,var(--accent2),var(--accent));margin-bottom:20px;}
+    @media(max-width:900px){nav{padding:16px 24px;}.nav-links{display:none;}#hero,#missions,#data,#team,footer{padding-left:24px;padding-right:24px;}#about{grid-template-columns:1fr;padding:60px 24px;}.about-visual{height:260px;}.sonar-container{right:-200px;opacity:.4;}.stats-strip{padding:16px 24px;overflow-x:auto;}.missions-grid{grid-template-columns:1fr;}}
+
+    /* ADMIN STYLES */
+    #admin-site{display:none;}
+    #login-screen{position:fixed;inset:0;z-index:1000;background:var(--black);display:flex;align-items:center;justify-content:center;}
+    .login-box{background:var(--deep);border:1px solid var(--muted);padding:48px 56px;width:100%;max-width:420px;position:relative;}
+    .login-box::before{content:'';position:absolute;top:0;left:0;right:0;height:2px;background:linear-gradient(90deg,var(--accent2),var(--accent));}
+    .lc-tl,.lc-tr,.lc-bl,.lc-br{position:absolute;width:14px;height:14px;}
+    .lc-tl{top:-1px;left:-1px;border-top:2px solid var(--accent);border-left:2px solid var(--accent);}
+    .lc-tr{top:-1px;right:-1px;border-top:2px solid var(--accent);border-right:2px solid var(--accent);}
+    .lc-bl{bottom:-1px;left:-1px;border-bottom:2px solid var(--accent);border-left:2px solid var(--accent);}
+    .lc-br{bottom:-1px;right:-1px;border-bottom:2px solid var(--accent);border-right:2px solid var(--accent);}
+    .login-logo{font-family:'Syne',sans-serif;font-weight:800;font-size:1.3rem;letter-spacing:.15em;color:var(--white);margin-bottom:6px;}.login-logo span{color:var(--accent);}
+    .login-sub{font-size:.65rem;letter-spacing:.2em;text-transform:uppercase;color:var(--text-dim);margin-bottom:36px;}
+    .login-label{font-size:.62rem;letter-spacing:.15em;text-transform:uppercase;color:var(--text-dim);margin-bottom:8px;display:block;}
+    .login-input{width:100%;padding:12px 16px;background:var(--navy);border:1px solid var(--muted);color:var(--white);font-family:'DM Mono',monospace;font-size:.85rem;outline:none;transition:border-color .2s;margin-bottom:24px;}
+    .login-input:focus{border-color:var(--accent);}
+    .login-btn{width:100%;padding:14px;background:var(--accent);color:var(--black);font-family:'DM Mono',monospace;font-size:.75rem;letter-spacing:.2em;text-transform:uppercase;border:none;cursor:pointer;transition:background .2s;clip-path:polygon(0 0,calc(100% - 10px) 0,100% 10px,100% 100%,0 100%);}
+    .login-btn:hover{background:var(--white);}
+    .login-error{font-size:.68rem;color:var(--danger);margin-top:14px;display:none;}
+    .admin-sidebar{position:fixed;top:0;left:0;bottom:0;width:240px;background:var(--deep);border-right:1px solid var(--muted);display:flex;flex-direction:column;z-index:100;}
+    .sidebar-logo{padding:24px 24px 20px;border-bottom:1px solid var(--muted);}
+    .sidebar-logo-text{font-family:'Syne',sans-serif;font-weight:800;font-size:.95rem;letter-spacing:.1em;color:var(--white);}.sidebar-logo-text span{color:var(--accent);}
+    .sidebar-badge{font-size:.58rem;letter-spacing:.15em;text-transform:uppercase;color:var(--text-dim);margin-top:4px;}
+    .sidebar-nav{padding:20px 0;flex:1;}
+    .sidebar-section-label{font-size:.55rem;letter-spacing:.25em;text-transform:uppercase;color:var(--text-dim);padding:0 24px 8px;opacity:.6;}
+    .sidebar-link{display:flex;align-items:center;gap:12px;padding:10px 24px;font-size:.72rem;letter-spacing:.08em;color:var(--text-dim);cursor:pointer;transition:all .15s;border-left:2px solid transparent;}
+    .sidebar-link:hover{color:var(--text);background:rgba(0,212,255,.03);}.sidebar-link.active{color:var(--accent);border-left-color:var(--accent);background:rgba(0,212,255,.06);}
+    .sidebar-link .icon{font-size:.9rem;width:18px;}
+    .sidebar-footer{padding:16px 24px;border-top:1px solid var(--muted);display:flex;flex-direction:column;gap:8px;}
+    .logout-btn{width:100%;padding:9px;background:transparent;border:1px solid var(--muted);color:var(--text-dim);font-family:'DM Mono',monospace;font-size:.65rem;letter-spacing:.12em;text-transform:uppercase;cursor:pointer;transition:all .2s;}
+    .logout-btn:hover{border-color:var(--danger);color:var(--danger);}
+    .view-site-btn{width:100%;padding:9px;background:transparent;border:1px solid var(--muted);color:var(--text-dim);font-family:'DM Mono',monospace;font-size:.65rem;letter-spacing:.12em;text-transform:uppercase;cursor:pointer;transition:all .2s;}
+    .view-site-btn:hover{border-color:var(--accent);color:var(--accent);}
+    .admin-main{margin-left:240px;min-height:100vh;}
+    .admin-topbar{background:var(--deep);border-bottom:1px solid var(--muted);padding:18px 40px;display:flex;align-items:center;justify-content:space-between;position:sticky;top:0;z-index:50;}
+    .topbar-title{font-family:'Syne',sans-serif;font-weight:700;font-size:1rem;color:var(--white);}
+    .topbar-meta{font-size:.62rem;color:var(--text-dim);letter-spacing:.1em;}
+    .publish-btn{padding:10px 28px;background:var(--success);color:var(--black);font-family:'DM Mono',monospace;font-size:.7rem;letter-spacing:.15em;text-transform:uppercase;border:none;cursor:pointer;transition:all .2s;clip-path:polygon(0 0,calc(100% - 8px) 0,100% 8px,100% 100%,0 100%);display:flex;align-items:center;gap:8px;}
+    .publish-btn:hover{background:#00ffcc;transform:translateY(-1px);}.publish-btn:disabled{opacity:.5;cursor:not-allowed;transform:none;}
+    .tab-panel{display:none;padding:40px;}.tab-panel.active{display:block;}
+    #toast{position:fixed;bottom:32px;right:32px;padding:14px 24px;font-size:.72rem;letter-spacing:.08em;border-left:3px solid var(--success);background:var(--deep);color:var(--success);z-index:9999;transform:translateY(100px);opacity:0;transition:all .3s cubic-bezier(.16,1,.3,1);pointer-events:none;}
+    #toast.show{transform:translateY(0);opacity:1;}#toast.error{border-color:var(--danger);color:var(--danger);}
+    .form-grid{display:grid;grid-template-columns:1fr 1fr;gap:24px;margin-bottom:32px;}.form-grid.single{grid-template-columns:1fr;}
+    .form-group{display:flex;flex-direction:column;gap:8px;}
+    .form-label{font-size:.6rem;letter-spacing:.18em;text-transform:uppercase;color:var(--text-dim);}
+    .form-input,.form-textarea,.form-select{padding:10px 14px;background:var(--navy);border:1px solid var(--muted);color:var(--white);font-family:'DM Mono',monospace;font-size:.78rem;outline:none;transition:border-color .2s;width:100%;}
+    .form-input:focus,.form-textarea:focus,.form-select:focus{border-color:var(--accent);}
+    .form-textarea{resize:vertical;min-height:80px;}.form-select option{background:var(--navy);}
+    .section-card{background:var(--deep);border:1px solid var(--muted);margin-bottom:24px;}
+    .section-card-header{padding:18px 24px;border-bottom:1px solid var(--muted);display:flex;align-items:center;justify-content:space-between;}
+    .section-card-title{font-family:'Syne',sans-serif;font-weight:700;font-size:.9rem;color:var(--white);}
+    .section-card-body{padding:24px;}
+    .mission-list{display:flex;flex-direction:column;gap:2px;margin-bottom:24px;}
+    .mission-row{background:var(--navy);border:1px solid var(--muted);padding:16px 20px;display:flex;align-items:center;justify-content:space-between;transition:border-color .2s;}
+    .mission-row:hover{border-color:rgba(0,212,255,.3);}
+    .mission-row-info{display:flex;flex-direction:column;gap:4px;}
+    .mission-row-id{font-size:.6rem;letter-spacing:.2em;color:var(--text-dim);}
+    .mission-row-name{font-family:'Syne',sans-serif;font-weight:600;font-size:.88rem;color:var(--white);}
+    .mission-row-actions{display:flex;gap:8px;align-items:center;}
+    .icon-btn{padding:7px 14px;background:transparent;border:1px solid var(--muted);color:var(--text-dim);font-family:'DM Mono',monospace;font-size:.62rem;letter-spacing:.1em;cursor:pointer;transition:all .15s;}
+    .icon-btn:hover{border-color:var(--accent);color:var(--accent);}.icon-btn.danger:hover{border-color:var(--danger);color:var(--danger);}
+    .abadge{font-size:.55rem;letter-spacing:.12em;text-transform:uppercase;padding:3px 8px;border-radius:2px;margin-left:8px;}
+    .abadge-active{background:rgba(0,255,170,.12);color:var(--success);}.abadge-complete{background:rgba(0,87,255,.12);color:#6699ff;}.abadge-planned{background:rgba(255,183,0,.1);color:var(--warn);}
+    .sensor-editor-row{display:grid;grid-template-columns:1fr 1fr auto;gap:8px;margin-bottom:8px;align-items:center;}
+    .add-sensor-btn{padding:8px 16px;background:transparent;border:1px dashed var(--muted);color:var(--text-dim);font-family:'DM Mono',monospace;font-size:.65rem;letter-spacing:.1em;cursor:pointer;transition:all .2s;width:100%;margin-top:8px;}
+    .add-sensor-btn:hover{border-color:var(--accent);color:var(--accent);}
+    .remove-btn{padding:8px 12px;background:transparent;border:1px solid var(--muted);color:var(--danger);font-family:'DM Mono',monospace;font-size:.7rem;cursor:pointer;}
+    .modal-overlay{position:fixed;inset:0;background:rgba(5,8,15,.92);z-index:800;display:none;align-items:center;justify-content:center;padding:24px;}
+    .modal-overlay.open{display:flex;}
+    .modal{background:var(--deep);border:1px solid var(--muted);width:100%;max-width:680px;max-height:90vh;overflow-y:auto;position:relative;}
+    .modal::before{content:'';position:absolute;top:0;left:0;right:0;height:2px;background:linear-gradient(90deg,var(--accent2),var(--accent));}
+    .modal-header{padding:24px 28px;border-bottom:1px solid var(--muted);display:flex;justify-content:space-between;align-items:center;}
+    .modal-title{font-family:'Syne',sans-serif;font-weight:700;font-size:1rem;color:var(--white);}
+    .modal-close{background:none;border:none;color:var(--text-dim);font-size:1.2rem;cursor:pointer;padding:4px 8px;}
+    .modal-body{padding:28px;}.modal-footer{padding:20px 28px;border-top:1px solid var(--muted);display:flex;justify-content:flex-end;gap:12px;}
+    .save-mission-btn{padding:12px 28px;background:var(--accent);color:var(--black);font-family:'DM Mono',monospace;font-size:.72rem;letter-spacing:.15em;text-transform:uppercase;border:none;cursor:pointer;transition:background .2s;clip-path:polygon(0 0,calc(100% - 8px) 0,100% 8px,100% 100%,0 100%);}
+    .save-mission-btn:hover{background:var(--white);}
+    .cancel-btn{padding:12px 20px;background:transparent;border:1px solid var(--muted);color:var(--text-dim);font-family:'DM Mono',monospace;font-size:.72rem;cursor:pointer;}
+    .sensor-table-editor{width:100%;border-collapse:collapse;font-size:.72rem;}
+    .sensor-table-editor th{text-align:left;padding:8px 12px;font-size:.58rem;letter-spacing:.18em;text-transform:uppercase;color:var(--text-dim);border-bottom:1px solid var(--muted);}
+    .sensor-table-editor td{padding:6px 4px;border-bottom:1px solid rgba(42,63,95,.3);}
+    .sensor-table-editor input,.sensor-table-editor select{width:100%;padding:6px 8px;background:var(--navy);border:1px solid transparent;color:var(--white);font-family:'DM Mono',monospace;font-size:.7rem;outline:none;}
+    .sensor-table-editor input:focus,.sensor-table-editor select:focus{border-color:var(--accent);}
+    .add-row-btn{padding:8px 20px;background:transparent;border:1px dashed var(--muted);color:var(--text-dim);font-family:'DM Mono',monospace;font-size:.65rem;letter-spacing:.1em;cursor:pointer;transition:all .2s;margin-top:12px;}
+    .add-row-btn:hover{border-color:var(--accent);color:var(--accent);}
+    .page-heading{margin-bottom:32px;}.page-tag{font-size:.6rem;letter-spacing:.25em;text-transform:uppercase;color:var(--accent);margin-bottom:8px;}
+    .page-h{font-family:'Syne',sans-serif;font-weight:800;font-size:1.6rem;color:var(--white);letter-spacing:-.01em;}
+    .page-desc{font-size:.72rem;color:var(--text-dim);margin-top:8px;line-height:1.7;}
+    .adivider{height:1px;background:var(--muted);margin:32px 0;}
+
+    /* FIX: public nav styling was accidentally applying to the admin sidebar <nav>, creating an invisible fixed blur header over the Publish button. */
+    #admin-site .sidebar-nav{position:static !important;top:auto !important;left:auto !important;right:auto !important;z-index:auto !important;display:block !important;padding:20px 0 !important;background:transparent !important;backdrop-filter:none !important;-webkit-backdrop-filter:none !important;}
+    #admin-site .admin-topbar{z-index:900 !important;}
+    #admin-site .publish-btn{position:relative;z-index:901;pointer-events:auto;}
+  
+
+
+/* HARD SEPARATION FIX: public page cannot leak into admin page */
+body.admin-mode #public-site,
+body.admin-mode #cursor,
+body.admin-mode #cursor-ring {
+  display: none !important;
+}
+body.public-mode #admin-site {
+  display: none !important;
+}
+
+/* Admin layout + typography reset */
+#admin-site {
+  font-family: 'DM Mono', monospace !important;
+  font-size: 13px !important;
+  line-height: 1.35 !important;
+  color: var(--text) !important;
+  background: var(--black) !important;
+  min-height: 100vh !important;
+}
+#admin-site * {
+  box-sizing: border-box !important;
+}
+#admin-site nav.sidebar-nav {
+  position: static !important;
+  inset: auto !important;
+  width: auto !important;
+  padding: 20px 0 !important;
+  display: block !important;
+  background: transparent !important;
+  background-image: none !important;
+  backdrop-filter: none !important;
+  -webkit-backdrop-filter: none !important;
+}
+#admin-site .admin-sidebar {
+  position: fixed !important;
+  top: 0 !important;
+  left: 0 !important;
+  bottom: 0 !important;
+  width: 240px !important;
+  background: var(--deep) !important;
+  border-right: 1px solid var(--muted) !important;
+  z-index: 1000 !important;
+}
+#admin-site .admin-main {
+  margin-left: 240px !important;
+  min-height: 100vh !important;
+}
+#admin-site .admin-topbar {
+  position: sticky !important;
+  top: 0 !important;
+  z-index: 1001 !important;
+  background: var(--deep) !important;
+  border-bottom: 1px solid var(--muted) !important;
+  padding: 18px 40px !important;
+}
+#admin-site h1,
+#admin-site h2,
+#admin-site h3,
+#admin-site p,
+#admin-site a,
+#admin-site button,
+#admin-site input,
+#admin-site textarea,
+#admin-site select,
+#admin-site div,
+#admin-site span,
+#admin-site label,
+#admin-site th,
+#admin-site td {
+  font-family: inherit;
+}
+#admin-site .page-h {
+  font-family: 'Syne', sans-serif !important;
+  font-size: 1.25rem !important;
+  line-height: 1.15 !important;
+  font-weight: 800 !important;
+  color: var(--white) !important;
+}
+#admin-site .page-desc {
+  font-size: 0.68rem !important;
+  line-height: 1.55 !important;
+}
+#admin-site .page-tag,
+#admin-site .form-label,
+#admin-site .topbar-meta,
+#admin-site .sidebar-badge,
+#admin-site .sidebar-section-label {
+  font-size: 0.56rem !important;
+  line-height: 1.3 !important;
+}
+#admin-site .topbar-title {
+  font-family: 'Syne', sans-serif !important;
+  font-size: 0.9rem !important;
+  line-height: 1.2 !important;
+}
+#admin-site .sidebar-logo-text {
+  font-family: 'Syne', sans-serif !important;
+  font-size: 0.82rem !important;
+  line-height: 1.2 !important;
+}
+#admin-site .sidebar-link {
+  font-size: 0.66rem !important;
+  line-height: 1.2 !important;
+}
+#admin-site .section-card-title,
+#admin-site .modal-title,
+#admin-site .mission-row-name {
+  font-family: 'Syne', sans-serif !important;
+  font-size: 0.78rem !important;
+  line-height: 1.2 !important;
+}
+#admin-site .form-input,
+#admin-site .form-textarea,
+#admin-site .form-select {
+  font-size: 0.68rem !important;
+  line-height: 1.35 !important;
+}
+#admin-site button,
+#admin-site .icon-btn,
+#admin-site .publish-btn,
+#admin-site .logout-btn,
+#admin-site .view-site-btn,
+#admin-site .save-mission-btn,
+#admin-site .cancel-btn {
+  font-family: 'DM Mono', monospace !important;
+  font-size: 0.6rem !important;
+  line-height: 1.2 !important;
+  cursor: pointer !important;
+}
+#admin-site .publish-btn {
+  font-size: 0.62rem !important;
+  position: relative !important;
+  z-index: 1002 !important;
+  pointer-events: auto !important;
+}
+#admin-site .mission-row-id,
+#admin-site .sensor-table-editor,
+#admin-site .sensor-table-editor input,
+#admin-site .sensor-table-editor select {
+  font-size: 0.62rem !important;
+}
+#admin-site .sensor-table-editor th {
+  font-size: 0.52rem !important;
+}
+
+</style>
+</head>
+<body>
+
+<!-- PUBLIC SITE -->
+<div id="public-site">
+  <div id="cursor"></div>
+  <div id="cursor-ring"></div>
+  <nav>
+    <a class="nav-logo" href="#"><span>SUB</span>MERGO</a>
+    <ul class="nav-links">
+      <li><a href="#missions">Missions</a></li><li><a href="#data">Data</a></li>
+      <li><a href="#about">About</a></li><li><a href="#team">Team</a></li><li><a href="?admin">Admin</a></li>
+    </ul>
+    <div class="nav-status"><div class="status-dot"></div><span>ROV ONLINE</span></div>
+  </nav>
+  <section id="hero">
+    <div class="depth-grid"></div>
+    <div class="sonar-container"><div class="sonar-cross"></div><div class="sonar-ring"></div><div class="sonar-ring"></div><div class="sonar-ring"></div><div class="sonar-ring"></div><div class="sonar-blip"></div></div>
+    <div class="horizon"></div>
+    <div class="hero-label" id="hero-label">Team Submerge &middot; Est. 2024</div>
+    <h1 id="hero-title-el">READING<span class="highlight" id="hero-title-line2">THE REEF</span></h1>
+    <p class="hero-sub" id="hero-sub-el">Coastal reef survey and environmental monitoring from the water's surface down. Real-time sensor data. Precision ROV operations. Every dive, documented.</p>
+    <div class="hero-cta">
+      <a class="btn-primary" href="#missions">&#8595; View Missions</a>
+      <a class="btn-ghost" href="#data">Sensor Log</a>
+    </div>
+  </section>
+  <div class="stats-strip">
+    <div class="stat-item"><div class="stat-num">14<span class="accent">+</span></div><div class="stat-desc">Missions Completed</div></div>
+    <div class="stat-item"><div class="stat-num">28<span class="accent">m</span></div><div class="stat-desc">Max Recorded Depth</div></div>
+    <div class="stat-item"><div class="stat-num">3.2<span class="accent">TB</span></div><div class="stat-desc">Data Collected</div></div>
+    <div class="stat-item"><div class="stat-num">99<span class="accent">%</span></div><div class="stat-desc">ROV Recovery Rate</div></div>
+    <div class="stat-item"><div class="stat-num">6<span class="accent"> reefs</span></div><div class="stat-desc">Active Survey Sites</div></div>
+  </div>
+  <section id="missions">
+    <div class="section-header">
+      <div><div class="section-tag">Field Operations</div><div class="section-divider"></div><h2>Mission Log</h2></div>
+      <div class="section-meta">Updated automatically<br/><span id="last-updated">-</span></div>
+    </div>
+    <div class="mission-filters">
+      <button class="filter-btn active" onclick="filterMissions('all',this)">All</button>
+      <button class="filter-btn" onclick="filterMissions('active',this)">Active</button>
+      <button class="filter-btn" onclick="filterMissions('complete',this)">Complete</button>
+      <button class="filter-btn" onclick="filterMissions('planned',this)">Planned</button>
+    </div>
+    <div class="missions-grid" id="missions-grid"><div style="padding:40px;color:var(--text-dim);">Loading...</div></div>
+  </section>
+  <section id="data">
+    <div class="section-header"><div><div class="section-tag">Sensor Output</div><div class="section-divider"></div><h2>Latest Readings</h2></div></div>
+    <table class="data-table">
+      <thead><tr><th>Timestamp</th><th>Mission</th><th>Depth (m)</th><th>Temp (&deg;C)</th><th>Salinity (PSU)</th><th>DO (mg/L)</th><th>Turbidity (NTU)</th><th>Status</th></tr></thead>
+      <tbody id="data-table-body"></tbody>
+    </table>
+  </section>
+  <section id="about">
+    <div class="about-visual">
+      <div class="rov-frame">
+        <div class="corner-tl"></div><div class="corner-tr"></div><div class="corner-bl"></div><div class="corner-br"></div>
+        <div class="scan-line"></div>
+        <svg class="rov-svg" viewBox="0 0 280 180" fill="none" xmlns="http://www.w3.org/2000/svg">
+          <rect x="60" y="60" width="160" height="70" rx="6" fill="#0a1628" stroke="#2a3f5f" stroke-width="1.5"/>
+          <rect x="80" y="40" width="120" height="22" rx="3" fill="#070d1a" stroke="#2a3f5f" stroke-width="1.2"/>
+          <ellipse cx="52" cy="95" rx="10" ry="18" fill="#070d1a" stroke="#00d4ff" stroke-width="1"/>
+          <ellipse cx="228" cy="95" rx="10" ry="18" fill="#070d1a" stroke="#00d4ff" stroke-width="1"/>
+          <ellipse cx="130" cy="145" rx="18" ry="10" fill="#070d1a" stroke="#00d4ff" stroke-width="1"/>
+          <ellipse cx="150" cy="145" rx="18" ry="10" fill="#070d1a" stroke="#00d4ff" stroke-width="1"/>
+          <circle cx="75" cy="95" r="12" fill="#070d1a" stroke="#00d4ff" stroke-width="1.5"/>
+          <circle cx="75" cy="95" r="6" fill="#00d4ff" opacity="0.3"/>
+          <circle cx="75" cy="95" r="3" fill="#00d4ff" opacity="0.8"/>
+          <circle cx="63" cy="80" r="3" fill="#ffb700" opacity="0.9"/>
+          <circle cx="63" cy="110" r="3" fill="#ffb700" opacity="0.9"/>
+          <line x1="100" y1="80" x2="200" y2="80" stroke="#2a3f5f" stroke-width="1"/>
+          <line x1="100" y1="95" x2="200" y2="95" stroke="#00d4ff" stroke-width="0.5" stroke-dasharray="4 4"/>
+          <line x1="100" y1="110" x2="200" y2="110" stroke="#2a3f5f" stroke-width="1"/>
+          <rect x="170" y="83" width="20" height="6" rx="1" fill="#00d4ff" opacity="0.4"/>
+          <rect x="170" y="93" width="14" height="6" rx="1" fill="#00d4ff" opacity="0.25"/>
+          <path d="M140 40 Q 140 20, 140 10" stroke="#2a3f5f" stroke-width="2" stroke-dasharray="3 3"/>
+          <rect x="215" y="85" width="8" height="24" rx="2" fill="#070d1a" stroke="#00d4ff" stroke-width="1"/>
+          <line x1="46" y1="88" x2="58" y2="88" stroke="#00d4ff" stroke-width="1" opacity="0.6"/>
+          <line x1="52" y1="82" x2="52" y2="108" stroke="#00d4ff" stroke-width="1" opacity="0.6"/>
+        </svg>
+      </div>
+    </div>
+    <div class="about-content">
+      <div class="section-tag">Who We Are</div><div class="section-divider"></div>
+      <h2 id="about-heading">Built for the reef</h2><br/>
+      <p id="about-p1"><strong>Team Submerge</strong> is a student-led ROV research group focused on coastal reef monitoring and environmental data collection. Our vehicle &mdash; <strong>Submergo</strong> &mdash; is custom-built for shallow-water survey operations.</p>
+      <p id="about-p2">We deploy along coastal reef systems, collecting high-resolution sensor data on water temperature, dissolved oxygen, salinity, and turbidity. Every dive documents reef health in detail.</p>
+      <p id="about-p3">Our mission feed updates in real time as we deploy, surface, and process data &mdash; bridging fieldwork and analysis in a single dashboard.</p>
+      <a class="btn-ghost" href="#team" style="margin-top:8px;">Meet the Team &rarr;</a>
+    </div>
+  </section>
+  <section id="team">
+    <div class="section-tag">Crew</div><div class="section-divider"></div><h2>Team Submerge</h2>
+    <div class="team-grid">
+      <div class="team-card"><div class="team-avatar">JR</div><div class="team-name">Jordan Rivera</div><div class="team-role">Lead Engineer</div></div>
+      <div class="team-card"><div class="team-avatar">SK</div><div class="team-name">Sam Kim</div><div class="team-role">Software / Data</div></div>
+      <div class="team-card"><div class="team-avatar">AP</div><div class="team-name">Alex Patel</div><div class="team-role">Sensor Systems</div></div>
+      <div class="team-card"><div class="team-avatar">ML</div><div class="team-name">Morgan Liu</div><div class="team-role">Navigation</div></div>
+      <div class="team-card"><div class="team-avatar">TN</div><div class="team-name">Tyler Nguyen</div><div class="team-role">Field Operations</div></div>
+    </div>
+  </section>
+  <footer><div class="footer-logo">SUBMERGO / TEAM SUBMERGE</div><div class="footer-copy">&copy; 2025 &mdash; All dive data archived</div></footer>
+</div>
+
+<!-- ADMIN SITE -->
+<div id="admin-site">
+  <div id="login-screen">
+    <div class="login-box">
+      <div class="lc-tl"></div><div class="lc-tr"></div><div class="lc-bl"></div><div class="lc-br"></div>
+      <div class="login-logo"><span>SUB</span>MERGO</div>
+      <div class="login-sub">Admin Access &middot; Team Submerge</div>
+      <label class="login-label">Password</label>
+      <input class="login-input" id="pw-input" type="password" placeholder="Enter admin password" onkeydown="if(event.key==='Enter')tryLogin()" />
+      <button class="login-btn" onclick="tryLogin()">&#x21B3; Authenticate</button>
+      <div class="login-error" id="login-error">&#9888; Incorrect password. Access denied.</div>
+    </div>
+  </div>
+  <div id="admin-shell" style="display:none;">
+    <aside class="admin-sidebar">
+      <div class="sidebar-logo"><div class="sidebar-logo-text"><span>SUB</span>MERGO</div><div class="sidebar-badge">// Admin Panel</div></div>
+      <nav class="sidebar-nav">
+        <div class="sidebar-section-label">Content</div>
+        <div class="sidebar-link active" onclick="showTab('missions',this)"><span class="icon">&#9672;</span> Missions</div>
+        <div class="sidebar-link" onclick="showTab('hero',this)"><span class="icon">&#9650;</span> Hero Section</div>
+        <div class="sidebar-link" onclick="showTab('about',this)"><span class="icon">&#9723;</span> About</div>
+        <div class="sidebar-link" onclick="showTab('sensordata',this)"><span class="icon">&#9675;</span> Sensor Data</div>
+      </nav>
+      <div class="sidebar-footer">
+        <button class="view-site-btn" onclick="switchToPublic()">&#8592; View Public Site</button>
+        <button class="logout-btn" onclick="logout()">&#9167; Log Out</button>
+      </div>
+    </aside>
+    <div class="admin-main">
+      <div class="admin-topbar">
+        <div><div class="topbar-title" id="topbar-title">Missions</div><div class="topbar-meta" id="topbar-meta">Manage mission cards on the public site</div></div>
+        <button class="publish-btn" id="publish-btn" onclick="publishAll()"><span>&#8593;</span> Publish Changes</button>
+      </div>
+      <div class="tab-panel active" id="tab-missions">
+        <div class="page-heading"><div class="page-tag">// Mission Log</div><div class="page-h">Manage Missions</div><div class="page-desc">Add, edit, or remove missions. Hit Publish to go live.</div></div>
+        <div class="section-card">
+          <div class="section-card-header"><div class="section-card-title">Current Missions</div><button class="icon-btn" onclick="openAddMission()">+ Add Mission</button></div>
+          <div class="section-card-body"><div class="mission-list" id="mission-list"></div></div>
+        </div>
+      </div>
+      <div class="tab-panel" id="tab-hero">
+        <div class="page-heading"><div class="page-tag">// Hero Section</div><div class="page-h">Edit Hero Text</div><div class="page-desc">Controls the large headline and subtitle on the landing page.</div></div>
+        <div class="section-card">
+          <div class="section-card-header"><div class="section-card-title">Hero Content</div></div>
+          <div class="section-card-body">
+            <div class="form-grid single">
+              <div class="form-group"><label class="form-label">Label (top tag line)</label><input class="form-input" id="h-label" /></div>
+              <div class="form-group"><label class="form-label">Headline Line 1 (solid)</label><input class="form-input" id="h-line1" /></div>
+              <div class="form-group"><label class="form-label">Headline Line 2 (outlined accent)</label><input class="form-input" id="h-line2" /></div>
+              <div class="form-group"><label class="form-label">Subtitle</label><textarea class="form-textarea" id="h-sub" rows="3"></textarea></div>
+            </div>
+          </div>
+        </div>
+      </div>
+      <div class="tab-panel" id="tab-about">
+        <div class="page-heading"><div class="page-tag">// About Section</div><div class="page-h">Edit About Text</div><div class="page-desc">The team description in the About section.</div></div>
+        <div class="section-card">
+          <div class="section-card-header"><div class="section-card-title">About Content</div></div>
+          <div class="section-card-body">
+            <div class="form-grid single">
+              <div class="form-group"><label class="form-label">Section Heading</label><input class="form-input" id="a-heading" /></div>
+              <div class="form-group"><label class="form-label">Paragraph 1</label><textarea class="form-textarea" id="a-p1" rows="3"></textarea></div>
+              <div class="form-group"><label class="form-label">Paragraph 2</label><textarea class="form-textarea" id="a-p2" rows="3"></textarea></div>
+              <div class="form-group"><label class="form-label">Paragraph 3</label><textarea class="form-textarea" id="a-p3" rows="2"></textarea></div>
+            </div>
+          </div>
+        </div>
+      </div>
+      <div class="tab-panel" id="tab-sensordata">
+        <div class="page-heading"><div class="page-tag">// Sensor Output</div><div class="page-h">Sensor Data Log</div><div class="page-desc">Edit the sensor readings table on the public site.</div></div>
+        <div class="section-card">
+          <div class="section-card-header"><div class="section-card-title">Readings</div><button class="icon-btn" onclick="addSensorRow()">+ Add Row</button></div>
+          <div class="section-card-body" style="overflow-x:auto;">
+            <table class="sensor-table-editor">
+              <thead><tr><th>Timestamp</th><th>Mission ID</th><th>Depth</th><th>Temp</th><th>Salinity</th><th>DO</th><th>Turbidity</th><th>Status</th><th></th></tr></thead>
+              <tbody id="sensor-tbody"></tbody>
+            </table>
+            <button class="add-row-btn" onclick="addSensorRow()">+ Add Row</button>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Mission Modal -->
+<div class="modal-overlay" id="modal-overlay">
+  <div class="modal">
+    <div class="modal-header"><div class="modal-title" id="modal-title">Add Mission</div><button class="modal-close" onclick="closeModal()">&#10005;</button></div>
+    <div class="modal-body">
+      <input type="hidden" id="edit-index" value="-1" />
+      <div class="form-grid">
+        <div class="form-group"><label class="form-label">Mission ID</label><input class="form-input" id="m-id" placeholder="SMRG-017" /></div>
+        <div class="form-group"><label class="form-label">Status</label><select class="form-select" id="m-status"><option value="planned">Planned</option><option value="active">Active</option><option value="complete">Complete</option></select></div>
+        <div class="form-group" style="grid-column:1/-1"><label class="form-label">Mission Name</label><input class="form-input" id="m-name" /></div>
+        <div class="form-group"><label class="form-label">Date</label><input class="form-input" id="m-date" /></div>
+        <div class="form-group"><label class="form-label">Location</label><input class="form-input" id="m-location" /></div>
+        <div class="form-group"><label class="form-label">Progress % (0-100)</label><input class="form-input" id="m-progress" type="number" min="0" max="100" /></div>
+        <div class="form-group"><label class="form-label">Live Ticker (active only)</label><input class="form-input" id="m-ticker" /></div>
+      </div>
+      <div class="adivider"></div>
+      <div style="margin-bottom:12px;font-size:.65rem;letter-spacing:.15em;text-transform:uppercase;color:var(--text-dim);">Sensor Readings (up to 4)</div>
+      <div id="sensor-inputs"></div>
+      <button class="add-sensor-btn" onclick="addSensorInput()">+ Add Sensor Reading</button>
+    </div>
+    <div class="modal-footer">
+      <button class="cancel-btn" onclick="closeModal()">Cancel</button>
+      <button class="save-mission-btn" onclick="saveMission()">Save Mission</button>
+    </div>
+  </div>
+</div>
+
+<div id="toast"></div>
+
+<script>
+  // == CHANGE THIS PASSWORD ==
+  const ADMIN_PASSWORD = 'SUBMERGE_ADMIN';
+
+  // Standalone storage fallback: uses ChatGPT storage when available, otherwise browser localStorage.
+  if (!window.storage) {
+    window.storage = {
+      async get(key) {
+        const value = localStorage.getItem(key);
+        return value === null ? null : { value };
+      },
+      async set(key, value) {
+        localStorage.setItem(key, value);
+        return { value };
+      }
+    };
+  }
+
+  const DEFAULT_MISSIONS = [
+    {id:'SMRG-015',name:'Coral Health Survey - Tide Ridge',status:'active',date:'Jun 14, 2025 08:32 UTC',location:'Tide Ridge Reef, Zone 4B',progress:62,sensors:[{label:'Depth',value:'12 m',cls:'highlight'},{label:'Temp',value:'26.4 C',cls:''},{label:'Salinity',value:'35.1 PSU',cls:''},{label:'DO',value:'7.8 mg/L',cls:'highlight'}],ticker:'LIVE Thruster 3 nominal Video feed 1080p Coral canopy detected'},
+    {id:'SMRG-014',name:'Bleaching Event Transect',status:'complete',date:'May 29, 2025',location:'Shallows East, Marker 7',progress:100,sensors:[{label:'Max Depth',value:'18 m',cls:''},{label:'Temp Delta',value:'+2.1 C',cls:'warn'},{label:'Duration',value:'3h 44m',cls:''},{label:'DO Avg',value:'7.2 mg/L',cls:''}]},
+    {id:'SMRG-013',name:'Sediment Flow - Lagoon Mouth',status:'complete',date:'May 10, 2025',location:'Kettleford Lagoon Inlet',progress:100,sensors:[{label:'Max Depth',value:'9 m',cls:''},{label:'Turbidity',value:'22 NTU',cls:'warn'},{label:'Duration',value:'2h 20m',cls:''},{label:'Samples',value:'940',cls:''}]},
+    {id:'SMRG-016',name:'Night Survey - Reef Flat',status:'planned',date:'Jun 28, 2025 (est.)',location:'Nightshore Reef Flat',progress:0,sensors:[{label:'Target Depth',value:'6 m',cls:''},{label:'Duration',value:'~2h',cls:''},{label:'Cameras',value:'Low-light',cls:''},{label:'Team',value:'5 members',cls:''}]},
+  ];
+  const DEFAULT_SENSOR_ROWS = [
+    {ts:'2025-06-14 09:14:22',mission:'SMRG-015',depth:12,temp:26.4,sal:35.1,DO:7.8,turb:4.1,status:'nominal'},
+    {ts:'2025-06-14 08:52:10',mission:'SMRG-015',depth:8,temp:27.0,sal:35.0,DO:7.5,turb:3.6,status:'nominal'},
+    {ts:'2025-06-14 08:34:05',mission:'SMRG-015',depth:4,temp:28.2,sal:34.8,DO:8.1,turb:2.9,status:'nominal'},
+    {ts:'2025-05-29 14:10:44',mission:'SMRG-014',depth:18,temp:28.5,sal:35.3,DO:7.2,turb:3.0,status:'archived'},
+    {ts:'2025-05-29 11:22:33',mission:'SMRG-014',depth:12,temp:29.1,sal:35.2,DO:7.0,turb:3.4,status:'archived'},
+    {ts:'2025-05-10 10:04:17',mission:'SMRG-013',depth:9,temp:27.6,sal:34.5,DO:6.9,turb:22.0,status:'flagged'},
+  ];
+
+  let missions=[], sensorRows=[], heroData={}, aboutData={}, activeFilter='all';
+
+  function route(){
+    const adminMode = window.location.search.includes('admin') || window.location.hash==='#admin';
+    if(adminMode){
+      document.body.classList.add('admin-mode');
+      document.body.classList.remove('public-mode');
+      document.getElementById('public-site').style.display='none';
+      document.body.classList.add('admin-mode'); document.body.classList.remove('public-mode'); document.getElementById('admin-site').style.display='block';
+    } else {
+      document.body.classList.add('public-mode');
+      document.body.classList.remove('admin-mode');
+      document.getElementById('public-site').style.display='block';
+      document.getElementById('admin-site').style.display='none';
+      initPublic();
+    }
+  }
+
+  function switchToPublic(){
+    document.body.classList.add('public-mode');
+    document.body.classList.remove('admin-mode');
+    document.getElementById('admin-site').style.display='none';
+    document.getElementById('public-site').style.display='block';
+    loadPublicData();
+  }
+
+  // PUBLIC
+  function initPublic(){
+    const cursor=document.getElementById('cursor'),ring=document.getElementById('cursor-ring');
+    let mx=0,my=0,rx=0,ry=0;
+    document.addEventListener('mousemove',e=>{mx=e.clientX;my=e.clientY;});
+    (function ac(){cursor.style.left=mx+'px';cursor.style.top=my+'px';rx+=(mx-rx)*.12;ry+=(my-ry)*.12;ring.style.left=rx+'px';ring.style.top=ry+'px';requestAnimationFrame(ac);})();
+    let td=12,cd=0;
+    const de=document.getElementById('depth-counter');
+    function ad(){if(cd<td){cd=Math.min(cd+Math.ceil((td-cd)*.04)+1,td);if(de) de.textContent=cd;setTimeout(ad,16);}}
+    setTimeout(ad,1000);
+    setInterval(()=>{td=8+Math.round(Math.random()*10);ad();},5000);
+    loadPublicData();
+  }
+
+  async function loadPublicData(){
+    missions=JSON.parse(JSON.stringify(DEFAULT_MISSIONS));
+    sensorRows=JSON.parse(JSON.stringify(DEFAULT_SENSOR_ROWS));
+    try{const r=await window.storage.get('submergo:missions',true);if(r&&r.value)missions=JSON.parse(r.value);}catch(e){}
+    try{const r=await window.storage.get('submergo:sensorRows',true);if(r&&r.value)sensorRows=JSON.parse(r.value);}catch(e){}
+    try{
+      const r=await window.storage.get('submergo:hero',true);
+      if(r&&r.value){
+        const h=JSON.parse(r.value);
+        const t=document.getElementById('hero-title-el');
+        if(h.line1&&t.childNodes[0]) t.childNodes[0].textContent=h.line1;
+        if(h.line2) document.getElementById('hero-title-line2').textContent=h.line2;
+        if(h.sub) document.getElementById('hero-sub-el').textContent=h.sub;
+        if(h.label) document.getElementById('hero-label').textContent=h.label;
+      }
+    }catch(e){}
+    try{
+      const r=await window.storage.get('submergo:about',true);
+      if(r&&r.value){
+        const a=JSON.parse(r.value);
+        if(a.heading) document.getElementById('about-heading').textContent=a.heading;
+        if(a.p1) document.getElementById('about-p1').innerHTML=a.p1;
+        if(a.p2) document.getElementById('about-p2').textContent=a.p2;
+        if(a.p3) document.getElementById('about-p3').textContent=a.p3;
+      }
+    }catch(e){}
+    document.getElementById('last-updated').textContent=new Date().toLocaleString('en-US',{month:'short',day:'numeric',hour:'2-digit',minute:'2-digit'});
+    renderPublicMissions();
+    renderSensorTable();
+  }
+
+  function filterMissions(f,btn){activeFilter=f;document.querySelectorAll('.filter-btn').forEach(b=>b.classList.remove('active'));btn.classList.add('active');renderPublicMissions();}
+
+  function renderPublicMissions(){
+    const grid=document.getElementById('missions-grid');
+    const filtered=activeFilter==='all'?missions:missions.filter(m=>m.status===activeFilter);
+    if(!filtered.length){grid.innerHTML='<div style="padding:40px;color:var(--text-dim);">No missions found.</div>';return;}
+    grid.innerHTML=filtered.map(m=>`
+      <div class="mission-card ${m.status==='active'?'active-mission':''}">
+        <div class="mission-header"><div class="mission-id">${m.id}</div><div class="mission-badge ${m.status==='active'?'badge-active':m.status==='complete'?'badge-complete':'badge-planned'}">${m.status}</div></div>
+        <div class="mission-name">${m.name}</div>
+        <div class="mission-date">${m.date}</div>
+        <div class="sensor-grid">${m.sensors.map(s=>`<div class="sensor-item"><div class="sensor-label">${s.label}</div><div class="sensor-value ${s.cls}">${s.value}</div></div>`).join('')}</div>
+        ${m.status!=='planned'?`<div class="mission-progress"><div class="progress-header"><span>Mission Progress</span><span>${m.progress}%</span></div><div class="progress-bar"><div class="progress-fill" style="width:${m.progress}%"></div></div></div>`:''}
+        <div class="mission-location">${m.location}</div>
+        ${m.ticker?`<div class="live-ticker"><div class="live-dot"></div><div class="ticker-text">${m.ticker}</div></div>`:''}
+      </div>`).join('');
+  }
+
+  function renderSensorTable(){
+    document.getElementById('data-table-body').innerHTML=sensorRows.map(r=>{
+      const sc=r.status==='nominal'?'td-success':r.status==='flagged'?'td-warn':'';
+      return `<tr><td>${r.ts}</td><td class="td-accent">${r.mission}</td><td>${r.depth}</td><td>${r.temp}</td><td>${r.sal}</td><td>${r.DO}</td><td class="${r.turb>10?'td-warn':''}">${r.turb}</td><td class="${sc}">${r.status}</td></tr>`;
+    }).join('');
+  }
+
+  // ADMIN
+  function tryLogin(){
+    if(document.getElementById('pw-input').value===ADMIN_PASSWORD){
+      document.getElementById('login-screen').style.display='none';
+      document.getElementById('admin-shell').style.display='block';
+      loadAdminData();
+    } else {
+      document.getElementById('login-error').style.display='block';
+      document.getElementById('pw-input').value='';
+      document.getElementById('pw-input').focus();
+    }
+  }
+  function logout(){document.getElementById('login-screen').style.display='flex';document.getElementById('admin-shell').style.display='none';document.getElementById('pw-input').value='';document.getElementById('login-error').style.display='none';}
+
+  const tabMeta={missions:['Missions','Manage mission cards on the public site'],hero:['Hero Section','Edit the headline and subtitle'],about:['About','Edit the team description'],sensordata:['Sensor Data','Edit the sensor readings table']};
+  function showTab(n,el){document.querySelectorAll('.tab-panel').forEach(p=>p.classList.remove('active'));document.querySelectorAll('.sidebar-link').forEach(l=>l.classList.remove('active'));document.getElementById('tab-'+n).classList.add('active');el.classList.add('active');document.getElementById('topbar-title').textContent=tabMeta[n][0];document.getElementById('topbar-meta').textContent=tabMeta[n][1];}
+
+  async function loadAdminData(){
+    try{const r=await window.storage.get('submergo:missions',true);missions=r&&r.value?JSON.parse(r.value):JSON.parse(JSON.stringify(DEFAULT_MISSIONS));}catch(e){missions=JSON.parse(JSON.stringify(DEFAULT_MISSIONS));}
+    try{const r=await window.storage.get('submergo:sensorRows',true);sensorRows=r&&r.value?JSON.parse(r.value):JSON.parse(JSON.stringify(DEFAULT_SENSOR_ROWS));}catch(e){sensorRows=JSON.parse(JSON.stringify(DEFAULT_SENSOR_ROWS));}
+    try{const r=await window.storage.get('submergo:hero',true);heroData=r&&r.value?JSON.parse(r.value):{};}catch(e){heroData={};}
+    try{const r=await window.storage.get('submergo:about',true);aboutData=r&&r.value?JSON.parse(r.value):{};}catch(e){aboutData={};}
+    renderMissionList();renderSensorTableEditor();populateHeroForm();populateAboutForm();
+  }
+
+  async function publishAll(){
+    heroData={label:document.getElementById('h-label').value,line1:document.getElementById('h-line1').value,line2:document.getElementById('h-line2').value,sub:document.getElementById('h-sub').value};
+    aboutData={heading:document.getElementById('a-heading').value,p1:document.getElementById('a-p1').value,p2:document.getElementById('a-p2').value,p3:document.getElementById('a-p3').value};
+    const btn=document.getElementById('publish-btn');btn.disabled=true;btn.textContent='Publishing...';
+    try{
+      await window.storage.set('submergo:missions',JSON.stringify(missions),true);
+      await window.storage.set('submergo:sensorRows',JSON.stringify(sensorRows),true);
+      await window.storage.set('submergo:hero',JSON.stringify(heroData),true);
+      await window.storage.set('submergo:about',JSON.stringify(aboutData),true);
+      showToast('Published! Click "View Public Site" to see changes');
+    }catch(e){showToast('Publish failed: '+e.message,true);}
+    btn.disabled=false;btn.innerHTML='<span>&#8593;</span> Publish Changes';
+  }
+
+  function showToast(msg,isError=false){const t=document.getElementById('toast');t.textContent=msg;t.className=isError?'error':'';t.classList.add('show');setTimeout(()=>t.classList.remove('show'),3500);}
+
+  function renderMissionList(){
+    const list=document.getElementById('mission-list');
+    if(!missions.length){list.innerHTML='<div style="color:var(--text-dim);font-size:.75rem;padding:16px 0;">No missions yet.</div>';return;}
+    list.innerHTML=missions.map((m,i)=>`
+      <div class="mission-row">
+        <div class="mission-row-info"><div class="mission-row-id">${m.id} <span class="abadge abadge-${m.status}">${m.status}</span></div><div class="mission-row-name">${m.name}</div></div>
+        <div class="mission-row-actions"><button class="icon-btn" onclick="openEditMission(${i})">Edit</button><button class="icon-btn danger" onclick="deleteMission(${i})">Delete</button></div>
+      </div>`).join('');
+  }
+
+  let sic=0;
+  function openAddMission(){document.getElementById('modal-title').textContent='Add Mission';document.getElementById('edit-index').value='-1';['m-id','m-name','m-date','m-location','m-ticker'].forEach(id=>document.getElementById(id).value='');document.getElementById('m-status').value='planned';document.getElementById('m-progress').value='0';document.getElementById('sensor-inputs').innerHTML='';sic=0;addSensorInput();addSensorInput();addSensorInput();addSensorInput();document.getElementById('modal-overlay').classList.add('open');}
+  function openEditMission(i){const m=missions[i];document.getElementById('modal-title').textContent='Edit Mission';document.getElementById('edit-index').value=i;document.getElementById('m-id').value=m.id;document.getElementById('m-name').value=m.name;document.getElementById('m-status').value=m.status;document.getElementById('m-date').value=m.date;document.getElementById('m-location').value=m.location;document.getElementById('m-progress').value=m.progress;document.getElementById('m-ticker').value=m.ticker||'';document.getElementById('sensor-inputs').innerHTML='';sic=0;m.sensors.forEach(s=>addSensorInput(s.label,s.value,s.cls));while(sic<4)addSensorInput();document.getElementById('modal-overlay').classList.add('open');}
+  function closeModal(){document.getElementById('modal-overlay').classList.remove('open');}
+  function addSensorInput(label='',value='',cls=''){if(sic>=4)return;sic++;const d=document.createElement('div');d.className='sensor-editor-row';d.innerHTML=`<input class="form-input" placeholder="Label" value="${label}"/><input class="form-input" placeholder="Value" value="${value}"/><select class="form-select" style="width:110px;"><option value="" ${cls===''?'selected':''}>Normal</option><option value="highlight" ${cls==='highlight'?'selected':''}>Accent</option><option value="warn" ${cls==='warn'?'selected':''}>Warn</option></select>`;document.getElementById('sensor-inputs').appendChild(d);}
+  function saveMission(){const idx=parseInt(document.getElementById('edit-index').value);const sensors=Array.from(document.querySelectorAll('#sensor-inputs .sensor-editor-row')).map(d=>{const inp=d.querySelectorAll('input,select');return{label:inp[0].value,value:inp[1].value,cls:inp[2].value};}).filter(s=>s.label&&s.value);const m={id:document.getElementById('m-id').value||'SMRG-???',name:document.getElementById('m-name').value||'Unnamed',status:document.getElementById('m-status').value,date:document.getElementById('m-date').value,location:document.getElementById('m-location').value,progress:parseInt(document.getElementById('m-progress').value)||0,ticker:document.getElementById('m-ticker').value,sensors};if(idx===-1)missions.push(m);else missions[idx]=m;renderMissionList();closeModal();showToast('Saved - click Publish to go live');}
+  function deleteMission(i){const rows=document.querySelectorAll('#mission-list .mission-row');const row=rows[i];if(!row||row.querySelector('.confirm-ui'))return;const actions=row.querySelector('.mission-row-actions');actions.innerHTML=`<span style="font-size:.65rem;color:var(--text-dim);margin-right:4px;">Sure?</span><button class="icon-btn danger confirm-ui" onclick="confirmDelete(${i})">Yes, delete</button><button class="icon-btn" onclick="renderMissionList()">Cancel</button>`;}
+  function confirmDelete(i){missions.splice(i,1);renderMissionList();showToast('Deleted - click Publish to go live');}
+
+  function populateHeroForm(){document.getElementById('h-label').value=heroData.label||'Team Submerge - Est. 2024';document.getElementById('h-line1').value=heroData.line1||'READING';document.getElementById('h-line2').value=heroData.line2||'THE REEF';document.getElementById('h-sub').value=heroData.sub||"Coastal reef survey and environmental monitoring from the water's surface down.";}
+  function populateAboutForm(){document.getElementById('a-heading').value=aboutData.heading||'Built for the reef';document.getElementById('a-p1').value=aboutData.p1||'Team Submerge is a student-led ROV research group focused on coastal reef monitoring.';document.getElementById('a-p2').value=aboutData.p2||'We deploy along coastal reef systems, collecting high-resolution sensor data.';document.getElementById('a-p3').value=aboutData.p3||'Our mission feed updates in real time as we deploy, surface, and process data.';}
+
+  function renderSensorTableEditor(){document.getElementById('sensor-tbody').innerHTML=sensorRows.map((r,i)=>`<tr><td><input value="${r.ts}" oninput="sensorRows[${i}].ts=this.value"/></td><td><input value="${r.mission}" oninput="sensorRows[${i}].mission=this.value"/></td><td><input value="${r.depth}" type="number" oninput="sensorRows[${i}].depth=+this.value"/></td><td><input value="${r.temp}" type="number" step="0.1" oninput="sensorRows[${i}].temp=+this.value"/></td><td><input value="${r.sal}" type="number" step="0.1" oninput="sensorRows[${i}].sal=+this.value"/></td><td><input value="${r.DO}" type="number" step="0.1" oninput="sensorRows[${i}].DO=+this.value"/></td><td><input value="${r.turb}" type="number" step="0.1" oninput="sensorRows[${i}].turb=+this.value"/></td><td><select onchange="sensorRows[${i}].status=this.value"><option ${r.status==='nominal'?'selected':''}>nominal</option><option ${r.status==='archived'?'selected':''}>archived</option><option ${r.status==='flagged'?'selected':''}>flagged</option></select></td><td><button class="remove-btn" onclick="deleteSensorRow(${i})">x</button></td></tr>`).join('');}
+  function addSensorRow(){const ts=new Date().toISOString().replace('T',' ').slice(0,19);sensorRows.unshift({ts,mission:'SMRG-???',depth:0,temp:0,sal:0,DO:0,turb:0,status:'nominal'});renderSensorTableEditor();showToast('Row added - fill in and Publish');}
+  function deleteSensorRow(i){sensorRows.splice(i,1);renderSensorTableEditor();}
+
+
+  // EXTRA BUTTON FIXES: use real event listeners too, so clicks work even if inline onclick is ignored.
+  function bindButtonFixes(){
+    const adminNav = document.querySelector('a[href="?admin"]');
+    if(adminNav){
+      adminNav.addEventListener('click', function(e){
+        e.preventDefault();
+        history.replaceState(null, '', '#admin');
+        document.getElementById('public-site').style.display='none';
+        document.body.classList.add('admin-mode'); document.body.classList.remove('public-mode'); document.getElementById('admin-site').style.display='block';
+        const pw = document.getElementById('pw-input');
+        if(pw) setTimeout(()=>pw.focus(), 50);
+      });
+    }
+
+    document.addEventListener('click', function(e){
+      const el = e.target.closest('button, .sidebar-link, .view-site-btn, .logout-btn, .filter-btn');
+      if(!el) return;
+      if(el.classList.contains('filter-btn')){
+        const txt = el.textContent.trim().toLowerCase();
+        if(['all','active','complete','planned'].includes(txt)){ e.preventDefault(); filterMissions(txt, el); return; }
+      }
+      if(el.classList.contains('login-btn')){ e.preventDefault(); tryLogin(); return; }
+      if(el.classList.contains('view-site-btn')){ e.preventDefault(); switchToPublic(); return; }
+      if(el.classList.contains('logout-btn')){ e.preventDefault(); logout(); return; }
+      if(el.id === 'publish-btn'){ e.preventDefault(); publishAll(); return; }
+      if(el.classList.contains('sidebar-link')){
+        const text = el.textContent.toLowerCase();
+        if(text.includes('missions')) showTab('missions', el);
+        else if(text.includes('hero')) showTab('hero', el);
+        else if(text.includes('about')) showTab('about', el);
+        else if(text.includes('sensor')) showTab('sensordata', el);
+        return;
+      }
+      if(el.textContent.includes('+ Add Mission')){ e.preventDefault(); openAddMission(); return; }
+      if(el.textContent.includes('+ Add Row')){ e.preventDefault(); addSensorRow(); return; }
+      if(el.textContent.includes('+ Add Sensor Reading')){ e.preventDefault(); addSensorInput(); return; }
+      if(el.textContent.trim() === 'Cancel'){ e.preventDefault(); closeModal(); return; }
+      if(el.classList.contains('modal-close')){ e.preventDefault(); closeModal(); return; }
+      if(el.classList.contains('save-mission-btn')){ e.preventDefault(); saveMission(); return; }
+    });
+  }
+  bindButtonFixes();
+  route();
+</script>
+</body>
+</html>
