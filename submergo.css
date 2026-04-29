@@ -355,3 +355,22 @@ body.public-mode #admin-site {
 #admin-site .sensor-table-editor th {
   font-size: 0.52rem !important;
 }
+
+#member-auth,#member-home{padding:80px 48px;}
+.auth-grid{display:grid;grid-template-columns:1fr 1fr;gap:20px;}
+.auth-card{background:var(--deep);border:1px solid var(--muted);padding:24px;display:flex;flex-direction:column;gap:10px;}
+.auth-card h3{font-family:'Syne',sans-serif;color:var(--white);}
+#member-auth-msg{margin-top:14px;font-size:.75rem;color:var(--accent);}
+.member-tabs{display:flex;gap:8px;margin:20px 0;}
+.member-tab-panel{display:none;}
+.member-tab-panel.active{display:block;}
+.chat-shell{background:var(--deep);border:1px solid var(--muted);padding:16px;}
+#chat-messages{min-height:180px;max-height:260px;overflow:auto;margin-bottom:12px;display:flex;flex-direction:column;gap:8px;}
+.chat-msg{background:rgba(0,212,255,.06);border:1px solid rgba(0,212,255,.25);padding:8px 10px;font-size:.72rem;}
+.chat-form{display:flex;gap:8px;}
+.rov-live-card{background:var(--deep);border:1px solid var(--muted);padding:20px;}
+.feed-placeholder{height:220px;border:1px dashed var(--accent);display:flex;align-items:center;justify-content:center;color:var(--text-dim);margin-top:12px;}
+.recent-news{margin-top:24px;background:var(--deep);border:1px solid var(--muted);padding:20px;}
+.recent-news h3{font-family:'Syne',sans-serif;color:var(--white);margin-bottom:10px;}
+.recent-news li{font-size:.72rem;color:var(--text-dim);margin:6px 0;}
+@media(max-width:900px){.auth-grid{grid-template-columns:1fr;}#member-auth,#member-home{padding:60px 24px;}}

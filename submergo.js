@@ -68,6 +68,7 @@
     setTimeout(ad,1000);
     setInterval(()=>{td=8+Math.round(Math.random()*10);ad();},5000);
     loadPublicData();
+    setupMemberArea();
   }
 
   async function loadPublicData(){
@@ -192,6 +193,80 @@
   function renderSensorTableEditor(){document.getElementById('sensor-tbody').innerHTML=sensorRows.map((r,i)=>`<tr><td><input value="${r.ts}" oninput="sensorRows[${i}].ts=this.value"/></td><td><input value="${r.mission}" oninput="sensorRows[${i}].mission=this.value"/></td><td><input value="${r.depth}" type="number" oninput="sensorRows[${i}].depth=+this.value"/></td><td><input value="${r.temp}" type="number" step="0.1" oninput="sensorRows[${i}].temp=+this.value"/></td><td><input value="${r.sal}" type="number" step="0.1" oninput="sensorRows[${i}].sal=+this.value"/></td><td><input value="${r.DO}" type="number" step="0.1" oninput="sensorRows[${i}].DO=+this.value"/></td><td><input value="${r.turb}" type="number" step="0.1" oninput="sensorRows[${i}].turb=+this.value"/></td><td><select onchange="sensorRows[${i}].status=this.value"><option ${r.status==='nominal'?'selected':''}>nominal</option><option ${r.status==='archived'?'selected':''}>archived</option><option ${r.status==='flagged'?'selected':''}>flagged</option></select></td><td><button class="remove-btn" onclick="deleteSensorRow(${i})">x</button></td></tr>`).join('');}
   function addSensorRow(){const ts=new Date().toISOString().replace('T',' ').slice(0,19);sensorRows.unshift({ts,mission:'SMRG-???',depth:0,temp:0,sal:0,DO:0,turb:0,status:'nominal'});renderSensorTableEditor();showToast('Row added - fill in and Publish');}
   function deleteSensorRow(i){sensorRows.splice(i,1);renderSensorTableEditor();}
+
+  function setupMemberArea(){
+    const registerForm=document.getElementById('register-form');
+    const loginForm=document.getElementById('member-login-form');
+    const chatForm=document.getElementById('chat-form');
+    if(registerForm) registerForm.addEventListener('submit',registerMember);
+    if(loginForm) loginForm.addEventListener('submit',loginMember);
+    if(chatForm) chatForm.addEventListener('submit',sendChatMessage);
+    document.querySelectorAll('[data-member-tab]').forEach(btn=>btn.addEventListener('click',()=>switchMemberTab(btn.dataset.memberTab)));
+    const active=JSON.parse(localStorage.getItem('submergo:activeMember')||'null');
+    if(active) showMemberHome(active);
+    renderNews();
+    renderChat();
+  }
+  function getMembers(){return JSON.parse(localStorage.getItem('submergo:members')||'[]');}
+  function setMembers(members){localStorage.setItem('submergo:members',JSON.stringify(members));}
+  function registerMember(e){
+    e.preventDefault();
+    const name=document.getElementById('reg-name').value.trim();
+    const email=document.getElementById('reg-email').value.trim().toLowerCase();
+    const password=document.getElementById('reg-password').value;
+    const members=getMembers();
+    if(members.some(m=>m.email===email)) return setMemberMsg('Account already exists for that email.', true);
+    const member={name,email,password,createdAt:new Date().toISOString()};
+    members.push(member); setMembers(members); localStorage.setItem('submergo:activeMember',JSON.stringify(member));
+    setMemberMsg('Registration successful. Redirecting to your personal homepage.');
+    showMemberHome(member);
+  }
+  function loginMember(e){
+    e.preventDefault();
+    const email=document.getElementById('login-email').value.trim().toLowerCase();
+    const password=document.getElementById('login-password').value;
+    const member=getMembers().find(m=>m.email===email&&m.password===password);
+    if(!member) return setMemberMsg('Invalid login credentials.', true);
+    localStorage.setItem('submergo:activeMember',JSON.stringify(member));
+    setMemberMsg('Login successful. Redirecting to your personal homepage.');
+    showMemberHome(member);
+  }
+  function showMemberHome(member){
+    document.getElementById('member-auth').style.display='none';
+    document.getElementById('member-home').style.display='block';
+    document.getElementById('member-home-title').textContent=`Welcome, ${member.name}`;
+    switchMemberTab('chat');
+  }
+  function setMemberMsg(msg,isError=false){const el=document.getElementById('member-auth-msg');if(!el)return;el.textContent=msg;el.style.color=isError?'var(--danger)':'var(--success)';}
+  function renderNews(){
+    const items=[
+      'ROV firmware v2.4 deployed with improved low-light stabilization.',
+      'Coral health survey expanded to Zone 5A this week.',
+      'Live telemetry now includes dissolved oxygen variance alerts.'
+    ];
+    const list=document.getElementById('member-news-list'); if(!list)return;
+    list.innerHTML=items.map(i=>`<li>${i}</li>`).join('');
+  }
+  function switchMemberTab(tab){
+    document.querySelectorAll('[data-member-tab]').forEach(b=>b.classList.toggle('active',b.dataset.memberTab===tab));
+    document.getElementById('member-tab-chat').classList.toggle('active',tab==='chat');
+    document.getElementById('member-tab-rov').classList.toggle('active',tab==='rov');
+  }
+  function sendChatMessage(e){
+    e.preventDefault();
+    const input=document.getElementById('chat-input');
+    const text=input.value.trim(); if(!text) return;
+    const active=JSON.parse(localStorage.getItem('submergo:activeMember')||'null');
+    const messages=JSON.parse(localStorage.getItem('submergo:chatMessages')||'[]');
+    messages.push({user:active?active.name:'Guest',text,ts:new Date().toISOString()});
+    localStorage.setItem('submergo:chatMessages',JSON.stringify(messages));
+    input.value=''; renderChat();
+  }
+  function renderChat(){
+    const shell=document.getElementById('chat-messages'); if(!shell) return;
+    const messages=JSON.parse(localStorage.getItem('submergo:chatMessages')||'[]');
+    shell.innerHTML=messages.slice(-30).map(m=>`<div class="chat-msg"><strong>${m.user}</strong>: ${m.text}</div>`).join('');
+  }
 
 
   // EXTRA BUTTON FIXES: use real event listeners too, so clicks work even if inline onclick is ignored.
